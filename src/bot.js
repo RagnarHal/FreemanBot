@@ -19,6 +19,11 @@ export default function start() {
 
   client.on('message', message => {
     if (message.author.bot) { return; }
+
+    if (message.content === '(╯°□°）╯︵ ┻━┻') {
+      handleCommand(message, 'fixtable');
+    }
+
     if (message.content.indexOf(config.prefix) !== 0) { return; }
   
     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
