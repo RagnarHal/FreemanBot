@@ -1,19 +1,19 @@
 {
   "name": "freemanbot",
-  "version": "1.0.0",
-  "description": "",
-  "main": "./src/main.js",
+  "version": "0.0.1",
+  "description": "A small bot for the HLF community Discord guild",
+  "main": "main.js",
   "scripts": {
     "babel-node": "babel-node",
-    "build": "rimraf dist/ && babel ./src --out-dir dist/ --ignore ./node_modules && cp ./src/config.json ./dist/config.json",
+    "build": "rimraf dist/ && babel . --out-dir dist/ --ignore ./node_modules && cp ./src/config.json ./dist/src/config.json",
     "start": "yarn build && cross-env NODE_ENV=production node ./dist/main.js",
-    "dev": "cross-env NODE_ENV=development nodemon --exec yarn babel-node -- ./src/main.js",
+    "dev": "cross-env NODE_ENV=development nodemon --exec yarn babel-node -- ./main.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint ./src",
     "precommit": "eslint ./src"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Ragnar Mikael Halldórsson",
+  "license": "MIT",
   "dependencies": {
     "discord.js": "^11.3.0",
     "winston": "^3.0.0-rc1"

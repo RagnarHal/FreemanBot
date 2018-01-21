@@ -3,9 +3,5 @@
     "node": true
   },
   
-  "extends": ["node"],
-
-  "rules": {
-    "no-console": 0
-  }
+  "extends": ["node"]
 }

@@ -1,10 +1,10 @@
-import dotenv from 'dotenv';
-import logger from './logger';
-import initBot from './bot';
-
 if (process.env.NODE_ENV !== 'production') {
-  dotenv.config();
+  require('dotenv').config()
 }
+
+import logger from './src/logger';
+import initBot from './src/bot';
+
 
 if (!process.env.BOT_TOKEN) {
   throw new Error('Discord token not found, please include it as a BOT_TOKEN environment variable')
