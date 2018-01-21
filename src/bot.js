@@ -3,10 +3,10 @@ import handlers from './commands';
 import config from './config.json';
 import logger from './logger';
 
-function handleCommand(message, command, args) {
+function handleCommand(message, command, args, client) {
   const handler = handlers[command];
   typeof handler === 'function'
-    ? handler(message, args)
+    ? handler(message, args, client)
     : message.reply(`I don't know how to handle a ${config.prefix}${command} command...`);
 }
 
@@ -29,7 +29,7 @@ export default function start() {
     const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
   
-    handleCommand(message, command, args);
+    handleCommand(message, command, args, client);
   
     // Timezone conversions (like !time iceland, !time tokyo)
     // Quotes
