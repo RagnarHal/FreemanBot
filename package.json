@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "description": "A small bot for the HLF community Discord guild",
   "main": "main.js",
+  "engines": {
+    "node": "8.x",
+    "npm": "*"
+},
   "scripts": {
     "babel-node": "babel-node",
     "build": "rimraf dist/ && babel . --out-dir dist/ --ignore ./node_modules && cp ./src/config.json ./dist/src/config.json",
