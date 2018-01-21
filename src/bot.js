@@ -22,7 +22,11 @@ export default function start() {
 
     if (message.content === '(╯°□°）╯︵ ┻━┻') {
       handleCommand(message, 'fixtable');
+      return;
     }
+
+    // Check every message for temperature conversions
+    handleCommand(message, 'temperature');
 
     if (message.content.indexOf(config.prefix) !== 0) { return; }
   
@@ -34,10 +38,8 @@ export default function start() {
     // Timezone conversions (like !time iceland, !time tokyo)
     // Quotes
     // Question/Answer (like !whatisbestinlife)
-    // Temperature conversion
-    // Hug (!hug)
-    // magic 8-ball
     // Lookup (dictionary)
+    // !commands (reply with list of commands in PM, delete original command)
   });
 
   client.login(process.env.BOT_TOKEN);

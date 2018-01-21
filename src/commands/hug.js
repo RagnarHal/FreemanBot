@@ -1,3 +1,5 @@
+import { getRandomInteger } from '../utils';
+
 const hugResponses = [
   u => `_Hugs ${u}_`,
   u => `_Gives ${u} a biiiiiiig hug_`,
@@ -10,7 +12,7 @@ const hugResponses = [
 export default (message) => {
   const hugger = message.author.username;
   
-  const randomResponseIndex = Math.floor(Math.random() * hugResponses.length);
+  const randomResponseIndex = getRandomInteger(hugResponses.length);
   const handler = hugResponses[randomResponseIndex];
   message.channel.send(handler(hugger));
 }

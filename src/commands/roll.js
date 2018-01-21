@@ -1,7 +1,14 @@
+import { getRandomInteger } from '../utils';
+
 export default (message, args) => {
   let sides = 100;
 
   if (args.length) {
+    if (args[0] === 'rick') {
+      message.reply('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+      return;
+    }
+
     const integerArg = parseInt(args[0]);
 
     if (isNaN(integerArg)) {
@@ -9,9 +16,14 @@ export default (message, args) => {
       return;
     }
 
+    if (integerArg < 1) {
+      message.reply('I rolled a... wait, that doesn\'t make sense!');
+      return;
+    }
+
     sides = integerArg;
   }
   
-  const rollResult = Math.floor(Math.random() * sides + 1)
+  const rollResult = getRandomInteger(sides) + 1;
   message.reply(`I rolled a ${rollResult}`)
 }
