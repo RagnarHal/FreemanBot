@@ -1,3 +1,7 @@
+if (!process.env.BOT_TOKEN) {
+  throw new Error('Discord token not found, please include it as a BOT_TOKEN environment variable')
+}
+
 import Discord from 'discord.js';
 import handlers from './commands';
 import config from './config.json';
@@ -35,11 +39,9 @@ export default function start() {
   
     handleCommand(message, command, args, client);
   
-    // Timezone conversions (like !time iceland, !time tokyo)
     // Quotes
     // Question/Answer (like !whatisbestinlife)
     // Lookup (dictionary)
-    // !commands (reply with list of commands in PM, delete original command)
   });
 
   client.login(process.env.BOT_TOKEN);

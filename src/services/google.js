@@ -1,3 +1,7 @@
+if (!process.env.GOOGLE_API_KEY) {
+  throw new Error('Google API key token not found, please include it as a GOOGLE_API_KEY environment variable')
+}
+
 import googleMaps from '@google/maps';
 
 const googleMapsClient = googleMaps.createClient({
