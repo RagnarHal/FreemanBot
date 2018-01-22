@@ -5,8 +5,10 @@ import fixtable from './fixtable';
 import hug from './hug';
 import eightball from './8ball';
 import temperature from './temperature';
+import help from './help';
 
 export default {
+  help,
   ping,
   say,
   roll,
