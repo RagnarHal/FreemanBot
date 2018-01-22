@@ -5,6 +5,7 @@ import fixtable from './fixtable';
 import hug from './hug';
 import eightball from './8ball';
 import temperature from './temperature';
+import time from './time';
 import help from './help';
 
 export default {
@@ -15,5 +16,6 @@ export default {
   fixtable,
   hug,
   8: eightball,
-  temperature
+  temperature,
+  time
 }

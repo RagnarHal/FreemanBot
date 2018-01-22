@@ -1,7 +1,4 @@
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config()
-}
-
+import 'dotenv/config';
 import logger from './src/logger';
 import initBot from './src/bot';
 

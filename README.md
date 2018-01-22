@@ -31,6 +31,7 @@ To set up your .env file, simply rename the provided `.env.default` file to `.en
 
 ```
 BOT_TOKEN=my-bot-token
+GOOGLE_API_KEY=my-api-key
 SOME_SUPAR_SEKRIT_STUFF=secret
 ```
 

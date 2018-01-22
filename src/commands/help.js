@@ -11,6 +11,10 @@ const commands = [
     description: 'I will reply with Pong! if I heard you'
   },
   {
+    command: 'time <location>',
+    description: 'I will tell you the time and date at a particular location in the world. Try a city, an address or a country'
+  },
+  {
     command: 'say <text>',
     description: 'Put words in my mouth'
   },

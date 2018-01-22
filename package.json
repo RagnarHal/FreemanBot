@@ -6,7 +6,7 @@
   "engines": {
     "node": "8.x",
     "npm": "*"
-},
+  },
   "scripts": {
     "babel-node": "babel-node",
     "build": "rimraf dist/ && babel . --out-dir dist/ --ignore ./node_modules && cp ./src/config.json ./dist/src/config.json",
@@ -19,9 +19,11 @@
   "author": "Ragnar Mikael Halldórsson",
   "license": "MIT",
   "dependencies": {
+    "@google/maps": "^0.4.5",
     "discord.js": "^11.3.0",
-    "winston": "^3.0.0-rc1",
-    "dotenv": "^4.0.0"
+    "dotenv": "^4.0.0",
+    "moment-timezone": "^0.5.14",
+    "winston": "^3.0.0-rc1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
