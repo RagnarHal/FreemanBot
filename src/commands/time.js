@@ -17,7 +17,7 @@ export default async (message, args = []) => {
     const mmt = moment();
     const date = mmt.tz(query).format(dateFormatStr);
     const time = mmt.tz(query).format(timeFormatStr);
-    message.reply(`It is __${time}__, __${date}__ in the **${query.toUpperCase()}** zone`);
+    message.reply(`It is __${time}__, ${date} in the **${query.toUpperCase()}** zone`);
     return;
   }
 
