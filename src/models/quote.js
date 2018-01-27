@@ -14,7 +14,7 @@ quotesSchema.statics.findRandom = function () {
       if (err) { return reject(err) }
       const random = getRandomInteger(count);
       
-      this.findOne().sort('timestamp').skip(random).exec((err, result) => {
+      this.findOne({ valid: true }).sort('timestamp').skip(random).exec((err, result) => {
         if (err) { return reject(err) }
         resolve(Object.assign(result, { index: random }));
       })
