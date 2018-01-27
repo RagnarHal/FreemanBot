@@ -8,6 +8,7 @@ import temperature from "./temperature";
 import time from "./time";
 import help from "./help";
 import quote from "./quote";
+import lookup from "./lookup";
 
 export default {
   help,
@@ -19,5 +20,6 @@ export default {
   8: eightball,
   temperature,
   time,
-  quote
+  quote,
+  lookup
 };
