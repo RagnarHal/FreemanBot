@@ -33,6 +33,10 @@ quotesSchema.statics.findRandom = function() {
 };
 
 quotesSchema.statics.findByIndex = function(index) {
+  if (index < 1) {
+    index = 1;
+  }
+
   return this.findOne({ valid: true })
     .sort("timestamp")
     .skip(index - 1)
