@@ -35,6 +35,10 @@ build/Release
 # Compiled app
 dist/
 
+# Local mongo database data folder and seed config
+mongodb
+seed.json
+
 # Dependency directories
 node_modules/
 jspm_packages/

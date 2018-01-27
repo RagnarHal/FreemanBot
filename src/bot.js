@@ -6,6 +6,7 @@ import Discord from 'discord.js';
 import handlers from './commands';
 import config from './config.json';
 import logger from './logger';
+import { init as dbInit } from './services/database';
 
 function handleCommand(message, command, args, client) {
   const handler = handlers[command];
@@ -16,6 +17,7 @@ function handleCommand(message, command, args, client) {
 
 export default function start() {
   const client = new Discord.Client();
+  dbInit();
 
   client.on('ready', () => {
     logger.info(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
