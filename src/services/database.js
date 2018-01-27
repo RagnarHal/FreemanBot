@@ -20,6 +20,6 @@ export function getRandomQuote() {
   return Quote.findRandom();
 }
 
-export function getQuoteByIndex(index) {
-  return Quote.findByIndex(index);
+export function getQuoteById(id) {
+  return Quote.findById(id);
 }

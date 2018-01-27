@@ -3,6 +3,7 @@ import { getRandomInteger } from "../utils";
 
 const quotesSchema = mongoose.Schema(
   {
+    quoteId: { type: Number, required: true },
     nick: { type: String, required: true },
     text: { type: String, required: true },
     timestamp: { type: Date, default: Date.now },
@@ -11,37 +12,19 @@ const quotesSchema = mongoose.Schema(
   { collection: "quotes" }
 );
 
-quotesSchema.statics.findRandom = function() {
-  return new Promise((resolve, reject) => {
-    this.count().exec((err, count) => {
-      if (err) {
-        return reject(err);
-      }
-      const random = getRandomInteger(count);
+quotesSchema.statics.findRandom = async function() {
+  const count = await this.count().exec();
 
-      this.findOne({ valid: true })
-        .sort("timestamp")
-        .skip(random)
-        .exec((err, result) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve(Object.assign(result, { index: random }));
-        });
-    });
-  });
+  return await this.findOne({ valid: true })
+    .sort("timestamp")
+    .skip(getRandomInteger(count))
+    .exec();
 };
 
-quotesSchema.statics.findByIndex = function(index) {
-  if (index < 1) {
-    index = 1;
-  }
-
-  return this.findOne({ valid: true })
-    .sort("timestamp")
-    .skip(index - 1)
+quotesSchema.statics.findById = function(id) {
+  return this.findOne({ valid: true, quoteId: id })
     .exec()
-    .then(result => (result ? Object.assign(result, { index }) : null));
+    .then(result => (result ? Object.assign(result) : null));
 };
 
 const Quote = mongoose.model("Quote", quotesSchema);
