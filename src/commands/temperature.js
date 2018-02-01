@@ -4,33 +4,34 @@ import {
   celsiusToFahrenheit,
   fahrenheitToCelsius,
   precisionRound
-} from '../utils';
+} from "../utils";
 
-export default (message) => {
+export default message => {
   // If the message doesn't actually contain a temperature, we do nothing
   if (!includesTemperature(message.content)) {
     return;
   }
 
-  let response = matchTemperatures(message.content).map(temp => {
-    temp = temp.replace(',', '.').trim(); // enforce functional-style declarative programming at all cost
-    const t = parseFloat(temp);
+  const response = matchTemperatures(message.content)
+    .map(temp => {
+      temp = temp.replace(",", ".").trim();
+      const t = parseFloat(temp);
 
-    if (temp.includes('C')) {
-      const tf = celsiusToFahrenheit(t)
-      return `${t}°C\t:point_right:\t${precisionRound(tf, 2)}°F`
-    }
-    
-    if (temp.includes('F')) {
-      const tc = fahrenheitToCelsius(t);
-      return `${t}°F\t:point_right:\t${precisionRound(tc, 2)}°C`
-    }
+      if (temp.includes("C")) {
+        const tf = celsiusToFahrenheit(t);
+        return `${t}°C\t:point_right:\t${precisionRound(tf, 2)}°F`;
+      }
 
-    return null;
-  })
+      if (temp.includes("F")) {
+        const tc = fahrenheitToCelsius(t);
+        return `${t}°F\t:point_right:\t${precisionRound(tc, 2)}°C`;
+      }
 
-  response = response.filter(r => !!r);
+      return null;
+    })
+    .filter(r => !!r);
+
   if (response.length) {
     message.channel.send(response);
   }
-}
+};
