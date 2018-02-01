@@ -13,8 +13,7 @@ export default (message) => {
   }
 
   let response = matchTemperatures(message.content).map(temp => {
-    temp = temp.replace(',', '.');
-    temp = temp.trim(); //remove whitespace before and after
+    temp = temp.replace(',', '.').trim(); // enforce functional-style declarative programming at all cost
     const t = parseFloat(temp);
 
     if (temp.includes('C')) {
