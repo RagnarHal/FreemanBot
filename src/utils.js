@@ -1,4 +1,4 @@
-const tempRegex = /-?(\d+|\d+[.,]\d+)°?[CFK]/g;
+const tempRegex = /[ \b]-?(\d+|\d+[.,]\d+)°?[CFK][ \b.]/g;
 
 // Get a random integer in range [0, upper) (upper is excluded)
 export function getRandomInteger(upper = 100) {
