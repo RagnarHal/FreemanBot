@@ -14,13 +14,14 @@ export default (message) => {
 
   let response = matchTemperatures(message.content).map(temp => {
     temp = temp.replace(',', '.');
+    temp = temp.trim(); //remove whitespace before and after
     const t = parseFloat(temp);
 
     if (temp.includes('C')) {
       const tf = celsiusToFahrenheit(t)
       return `${t}°C\t:point_right:\t${precisionRound(tf, 2)}°F`
     }
-    
+
     if (temp.includes('F')) {
       const tc = fahrenheitToCelsius(t);
       return `${t}°F\t:point_right:\t${precisionRound(tc, 2)}°C`
