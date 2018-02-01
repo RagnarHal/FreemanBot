@@ -20,7 +20,7 @@ export default (message) => {
       const tf = celsiusToFahrenheit(t)
       return `${t}°C\t:point_right:\t${precisionRound(tf, 2)}°F`
     }
-
+    
     if (temp.includes('F')) {
       const tc = fahrenheitToCelsius(t);
       return `${t}°F\t:point_right:\t${precisionRound(tc, 2)}°C`
