@@ -1,5 +1,4 @@
 import moment from "moment-timezone";
-import logger from "../logger";
 import { getRandomQuote, getQuoteById } from "../services/database";
 
 export default async (message, args = []) => {
@@ -18,14 +17,15 @@ export default async (message, args = []) => {
       quote = await getRandomQuote();
     }
   } catch (err) {
-    // Only log the error, the bot will respond as if it couldn't find a quote
-    logger.error("Quote command threw", err);
+    return message.reply(
+      "Something went wrong when I tried to get the quote. Try again or another quote!"
+    );
   }
 
   quote !== null
     ? message.channel.send(
-        `#${quote.quoteId}: "${quote.text}" - **${quote.nick}** ${moment(
-          quote.timestamp
+        `#${quote.id}: "${quote.content}" - **${quote.author}** ${moment(
+          parseInt(quote.timestamp)
         ).format("MMM Do YYYY")}`
       )
     : message.reply("I couldn't find that quote...");
