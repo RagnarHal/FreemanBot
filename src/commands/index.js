@@ -8,6 +8,7 @@ import temperature from "./temperature";
 import time from "./time";
 import help from "./help";
 import quote from "./quote";
+import addquote from "./addquote";
 import lookup from "./lookup";
 
 export default {
@@ -21,5 +22,6 @@ export default {
   temperature,
   time,
   quote,
-  lookup
+  lookup,
+  addquote
 };

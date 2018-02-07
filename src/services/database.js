@@ -11,7 +11,7 @@ function getClient() {
   if (!client) {
     client = new Client({
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === "production"
+      ssl: true
     });
   }
 
@@ -46,6 +46,19 @@ export async function getQuoteById(id) {
     return res.rows[0];
   } catch (err) {
     logger.error(`getQuoteById error. Requested quote #${id}`, err);
+    throw err;
+  }
+}
+
+export async function addQuote({ author, content, timestamp, valid }) {
+  try {
+    const res = await getClient().query(
+      "INSERT INTO quotes (author, content, timestamp, valid) VALUES ($1, $2, $3, $4) RETURNING *",
+      [author, content, timestamp, valid]
+    );
+    return res.rows[0].id;
+  } catch (err) {
+    logger.error("addQuote error", err);
     throw err;
   }
 }
