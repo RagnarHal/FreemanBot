@@ -55,10 +55,6 @@ export default function start() {
     const command = args.shift().toLowerCase();
 
     handleCommand(message, command, args, client);
-
-    // Quotes
-    // Question/Answer (like !whatisbestinlife)
-    // Lookup (dictionary)
   });
 
   client.login(process.env.BOT_TOKEN);
