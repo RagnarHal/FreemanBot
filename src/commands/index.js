@@ -10,6 +10,7 @@ import help from "./help";
 import quote from "./quote";
 import addquote from "./addquote";
 import lookup from "./lookup";
+import question from "./question";
 
 export default {
   help,
@@ -23,5 +24,6 @@ export default {
   time,
   quote,
   lookup,
-  addquote
+  addquote,
+  question
 };

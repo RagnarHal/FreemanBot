@@ -77,3 +77,29 @@ export function teardown() {
     .end()
     .catch(err => logger.error("Error disconnecting from database", err));
 }
+
+
+export async function getRandomTrivia() {
+  try {
+    const res = await getClient().query(
+      "SELECT id, question, answer from trivia_questions_and_answers ORDER BY RANDOM() LIMIT 1",
+    );
+    return res.rows[0];
+  } catch (err) {
+    logger.error("getRandomQuestion error", err);
+    throw err;
+  }
+}
+
+// export async function getTrivia(id) {
+//   try {
+//     const res = await getClient().query(
+//       "SELECT id, question, answer from trivia_questions_and_answers WHERE ID=$1",
+//       [id]
+//     );
+//     return res.rows[0];
+//   } catch (err) {
+//     logger.error("getRandomQuestion error", err);
+//     throw err;
+//   }
+// }
