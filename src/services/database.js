@@ -78,20 +78,7 @@ export function teardown() {
     .catch(err => logger.error("Error disconnecting from database", err));
 }
 
-
-export async function getRandomTrivia() {
-  try {
-    const res = await getClient().query(
-      "SELECT id, question, answer from trivia_questions_and_answers ORDER BY RANDOM() LIMIT 1",
-    );
-    return res.rows[0];
-  } catch (err) {
-    logger.error("getRandomQuestion error", err);
-    throw err;
-  }
-}
-
-// export async function getTrivia(id) {
+// export async function getTriviaById(id) {
 //   try {
 //     const res = await getClient().query(
 //       "SELECT id, question, answer from trivia_questions_and_answers WHERE ID=$1",
@@ -103,3 +90,68 @@ export async function getRandomTrivia() {
 //     throw err;
 //   }
 // }
+
+export async function hasTriviaTimedout() {
+  try {
+    const res = await getClient().query(
+      "SELECT * FROM status WHERE vname='trivia_time'",
+    );
+
+    const trivia_time = parseInt(res.rows[0].vint);
+    const current_time = parseInt((new Date).getTime());
+
+    //if too much time has passed 
+    return ((current_time - trivia_time) > 120 * 1000);
+
+  } catch (err) {
+    logger.error("hasTriviaTimedout error", err);
+    throw err;
+  }
+}
+
+export async function getCurrentTrivia() {
+  try {
+    const res0 = await getClient().query(
+      "SELECT * from status WHERE vname='trivia_key'",
+    );
+
+    const trivia_key = parseInt(res0.rows[0].vint);
+
+    const res = await getClient().query(
+      "SELECT id, question, answer from trivia_questions_and_answers WHERE id = $1;",
+      [trivia_key]
+    );
+
+    return res.rows[0];
+
+  } catch (err) {
+    logger.error("getCurrentTrivia error", err);
+    throw err;
+  }
+}
+
+export async function getNewTrivia() {
+  try {
+    const res = await getClient().query(
+      "SELECT id, question, answer FROM trivia_questions_and_answers ORDER BY RANDOM() LIMIT 1",
+    );
+
+    const trivia_key = parseInt(res.rows[0].id);
+    const trivia_time = parseInt((new Date).getTime());
+
+    await getClient().query(
+      "UPDATE status SET vint=$1 WHERE vname='trivia_key'", [trivia_key]
+    );
+
+    await getClient().query(
+      "UPDATE status SET vint=$1 WHERE vname='trivia_time'", [trivia_time]
+    );
+
+    return res.rows[0];
+
+  } catch (err) {
+    logger.error("getNewTrivia error", err);
+    throw err;
+  }
+}
+
