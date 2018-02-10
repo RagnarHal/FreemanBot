@@ -155,3 +155,51 @@ export async function getNewTrivia() {
   }
 }
 
+export async function awardTriviaPoints(id, name, points) {
+  try {
+
+    const sid = String(id);
+
+    const res = await getClient().query(
+      "SELECT * FROM trivia_scores WHERE id=$1", [sid]
+    );
+
+    if (res.rows.length > 0) {
+      console.log("there is an entry");
+      await getClient().query(
+        "UPDATE trivia_scores SET nick=$2, score=score+$3 WHERE id=$1", [sid, name, points]
+      );
+    } else {
+      console.log("inserting an entry" + name);
+      await getClient().query(
+        "INSERT INTO trivia_scores (id, nick, score) VALUES ($1, $2, $3)", [sid, name, points]
+      );
+    }
+
+  } catch (err) {
+    logger.error("awardTriviaPoints error", err);
+    throw err;
+  }
+}
+
+export async function getTriviaScore(id) {
+  try {
+
+    const sid = String(id);
+
+    const res = await getClient().query(
+      "SELECT * FROM trivia_scores WHERE id = $1", [sid]
+    );
+
+    if (res.rows.length > 0) {
+      return res.rows[0].score;
+    } else {
+      return 2;
+    }
+
+  } catch (err) {
+    console.log(err);
+  }
+
+  return 3;
+}

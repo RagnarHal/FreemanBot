@@ -1,4 +1,4 @@
-import { getCurrentTrivia, getNewTrivia } from "../services/database";
+import { getCurrentTrivia, getNewTrivia, awardTriviaPoints, getTriviaScore } from "../services/database";
 
 export default async (message, args = []) => {
 
@@ -15,16 +15,26 @@ export default async (message, args = []) => {
 
     if (resp === trivia.answer) {
 
+      await awardTriviaPoints(message.author.id, message.author.username, 1);
+
+      const score = await getTriviaScore(message.author.id);
+
+      console.log("obtained awards");
+
       const new_trivia = await getNewTrivia();
 
-      message.reply("You are Correct Sir");
-      message.reply(`New Question! #${new_trivia.id}: ${new_trivia.question} ->> ${new_trivia.answer}`);
+      message.reply("You are Correct Sir. Your score is now " + String(score) + "pts");
+      message.reply(`New Question! #${new_trivia.id}: ${new_trivia.question}`);
 
-    } else {
-      message.reply("You are Wrong Sir");
+    } else if (resp.indexOf(trivia.answer) != -1 || trivia.answer.indexOf(resp) != -1) {
+      message.reply("You are Very Close Sir!");
+    }
+    else {
+      message.reply("You are Wrong Sir!");
     }
 
   } catch (err) {
     message.reply("I couldn't figure out how to get a random trivia question");
+    console.log(err);
   }
 };
