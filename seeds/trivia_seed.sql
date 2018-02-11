@@ -52,7 +52,7 @@ ALTER SEQUENCE questions_and_answers_id_seq OWNED BY trivia_questions_and_answer
 SET default_with_oids = false;
 
 --
--- Name: status; Type: TABLE; Schema: public; Owner: posgres; Tablespace: 
+-- Name: status; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
 
 CREATE TABLE status (
@@ -62,7 +62,7 @@ CREATE TABLE status (
 );
 
 
-ALTER TABLE public.status OWNER TO posgres;
+ALTER TABLE public.status OWNER TO postgres;
 
 --
 -- Name: trivia_scores; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
@@ -71,7 +71,8 @@ ALTER TABLE public.status OWNER TO posgres;
 CREATE TABLE trivia_scores (
     id text NOT NULL,
     score integer DEFAULT 0 NOT NULL,
-    nick text NOT NULL
+    nick text NOT NULL,
+    skip integer DEFAULT 0
 );
 
 
@@ -92,13 +93,14 @@ SELECT pg_catalog.setval('questions_and_answers_id_seq', 5609, true);
 
 
 --
--- Data for Name: status; Type: TABLE DATA; Schema: public; Owner: posgres
+-- Data for Name: status; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY status (vname, vint, vstring) FROM stdin;
 trivia_count	0	
-trivia_key	2098	
-trivia_time	1518225634983	
+trivia_skip	0	
+trivia_key	4359	
+trivia_time	0	
 \.
 
 
@@ -160,6 +162,7 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 778	A couple described as a “Sam and Diane” refers to the on-again,off-again duo of what classic sitcom?	CHEERS
 779	A cowcatcher is a metal grill that is commonly found on the front of what type of vehicle?	TRAIN
 780	A criminal who has “cooked the books” has engaged in what kind of illegal behavior?	ACCOUNTING FRAUD
+1319	Basra is the chief port of which Persian Gulf country?	IRAQ
 781	A crowd of people are running away from a bull on the cover of the 2008 Fodor’s guide to what country?	SPAIN
 782	A cut of beef is said to be “marbled” if it is what?	FLECKED WITH FAT
 783	A dangerous type of what bug gets its name from the port town of Taranto, Italy?	SPIDER
@@ -215,6 +218,7 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 833	A local seafood joint called the “Crab Shack” is a frequent setting on which of these TV sitcoms?	MY NAME IS EARL
 834	A lover of learning, as of 2010 James Franco has enrolled in all but which of these universities?	HARVARD
 835	A lover of red meat and weaponry,Ron Swanson is Leslie Knope’s mustachioed boss on what popular sitcom?	PARKS AND RECREATION
+4993	Who is Marshal Bruce Mathers III?	RAP STAR EMINEM
 836	A major airport serving what U.S. city is named in honor of mayors William Berry Hartsfield and Maynard Jackson?	ATLANTA
 837	A medicine man named Ketut Liyer is now a popular tourist attraction in Bali thanks to his appearance in what memoir?	EAT,PRAY,LOVE
 838	A mere 4.2 light years away,what aptly-named star is our sun’s closest neighbor?	PROXIMA CENTAURI
@@ -379,6 +383,7 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 997	About “boys, drama, and best friends” in 2010 what reality star announced her upcoming novel, “A Shore Thing?”	NICOLE “SNOOKIE” POLIZZI
 998	Accepting his first Oscar in 2012 at the age of 82,what actor said to his statue, “You’re only two years older than me!”?	CHRISTOPHER PLUMMER
 999	According to a debunked urban legend, Avon’s original Skin So Soft was thought to be an effective what?	INSECT REPELLENT
+4994	Who is Marshall Bruce Mathers III?	RAP STAR EMINEM
 1000	According to 19th-century Romantic poet John Keats,what is “a joy for ever?”	A THING OF BEAUTY
 1001	According to 2009 government statistics,what reality show features the most dangerous real-life profession?	THE DEADLIEST CATCH
 1002	According to a 1974 Barry Manilow song, who “came and gave…without taking?”	MANDY
@@ -537,6 +542,7 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 1155	American Idol reject William Hung became an instant celebrity due to his mangled version of what pop song?	SHE BANGS
 1156	American skiers should pack a passport if they plan to travel to which of these popular resort towns?	BANFF
 1157	An 18-karat gold bracelet is what percent gold?	75 PERCENT
+4995	Who is Michael Buble?	GRAMMY-WINNING SINGER
 1158	An 1899 poem that begins, “I know what the caged bird feels” inspired the title of whose 1969 memoirs?	MAYA ANGELOU
 1159	An 18th century British diplomat, Baron St. Helens lends his name to a famous American what?	MOUNTAIN
 1160	An abbreviation of the term “hypertext transfer protocol” typically appears at the beginning of a what?	WEBSITE ADDRESS
@@ -698,7 +704,6 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 1316	Based on the childrens’ books, the main characters of the Nick Jr TV show “Olivia” are what animals?	PIGS
 1317	Based on the foreign film “8 1/2,” the Broadway musical “Nine” features what aptly-titled song?	BE ITALIAN
 1318	Basic Enlisted Submarine School is a training course offered by which branch of the U.S. military?	NAVY
-1319	Basra is the chief port of which Persian Gulf country?	IRAQ
 1320	Bateau,scoop and sweetheart are terms used to refer to different styles of a dress’s what?	NECKLINE
 1321	Bearnaise, a classic French sauce served with steak, is traditionally flavored with which of these herbs?	TARRAGON
 1322	Because he grew up with it,which of these actors would not have to fake an Irish accent?	COLIN FARRELL
@@ -748,6 +753,7 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 1366	Because of how they are paid, what Hollywood professionals are known as “tenpercenters?”	TALENT AGENTS
 1367	Because of its abundance of bright lights, what New York city landmark is called “The Great White Way”?	BROADWAY
 1368	Because of its population, which state elects two senators but only one representative to Congress?	DELAWARE
+4996	Who is Reginald Dwight?	ELTON JOHN
 1369	Because of its shape, which of these comfy chairs is sometimes referred to as a “dish chair”?	PAPASAN CHAIR
 1370	Because of the motions involved,what activity is thought to help children correct a pigeon-toed gait?	BALLET
 1371	Because of the way it looks, sneezing into the crook of your arm is commonly called a what?	DRACULA SNEEZE
@@ -970,6 +976,7 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 1587	Considered one of the world’s greatest soccer players, Cristiano Ronaldo hails from what country?	PORTUGAL
 1588	Considered the most influential in his field,Lester Bangs was best known for what kind of journalism?	ROCK MUSIC
 1589	Considered the opposite of sexy,women’s underwear that comes up to the waist is slangily known as what?	GRANNY PANTIES
+3445	What classic cartoon character has a romantic rival named Bluto?	POPEYE
 1590	Considered “too fat” for a single seat, what film director was bumped from a Southwest Airlines flight in 2010?	KEVIN SMITH
 1591	Consisting of food served in a specialized box, “bento” is a popular type of meal native to what country?	JAPAN
 1592	Containing a deadly toxin, the carefully-prepared Japanese delicacy “fugu” is what type of animal?	PUFFERFISH
@@ -1399,6 +1406,7 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 2016	In 1903,the International Brotherhood of Teamsters was formed to help persons who did what?	HAULED LOADS
 2017	In 1909, who became the first President to be depicted on a circulating U.S. monetary coin?	ABRAHAM LINCOLN
 2018	In 1918, William L. Murphy invented a stow-away version of what piece of furniture?	BED
+4997	Who is Rick Rubin?	MUSIC PRODUCER
 2019	In 1926,Adriano,Marcello,and Bruno Ducati founded a firm today known for manufacturing what?	MOTORCYCLES
 2020	In 1927,Charles Lindbergh flew the first solo,non-stop transatlantic flight aboard what aircraft?	SPIRIT OF ST.LOUIS
 2021	In 1928, anthropologist Margaret Mead published her landmark study titled “Coming of Age in” what country?	SAMOA
@@ -1707,6 +1715,7 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 2323	In a nod to the bird depicted on its face, the dollar coin of Canada is affectionately known as what?	LOONIE
 2324	In a nod to the venue where they were traditionally worn,women’s gloves that extend to the elbow are called what?	OPERA GLOVES
 2325	In a non-leap year, April Fools’ Day would fall on what numerical day of the year?`	THE 91ST DAY
+4998	Who is Rick Rubin?	MUSIC PRODUCER
 2326	In a phrase credited to Thomas Carlyle,the field of economics is known by what gloomy nickname?	THE DISMAL SCIENCE
 2327	In a pinch,which of these pantry staples can be used to put out a kitchen fire?	BAKING SODA
 2328	In a popular version of the children’s tune “The Wheels on the Bus,” the “driver on the bus says” what?	MOVE ON BACK
@@ -1974,6 +1983,7 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 2589	Retiring shortly after filming,what Oscar-winning actor’s final legacy is the 2004 comedy “Welcome to Mooseport”?	GENE HACKMAN
 2590	Rice wine, sugar, and soy sauce are the three primary ingredients of what?	TERIYAKI SAUCE
 2591	Rich Riordan’s best-selling kids book feature Percy Jackson’s adventures with what “fantastic” group	THE OLYMPIANS
+3557	What gaseous element makes up about 70 percent of the mass of the Sun?	HYDROGEN
 2592	Rick Riordan’s bestselling kids’ books feature Percy Jackson’s adventures with what “fantastic” group?	THE OLYMPIANS
 2593	Ricky Gervais is the co-creator and star of the original,British version of what hit U.S. TV Show?	THE OFFICE
 2594	Riffing on Scorsese,the 90’s cartoon “Animaniacs” featured the “Goodfeathers,” three pigeons who were also what?	GANGSTERS
@@ -2183,6 +2193,7 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 2801	The 2014 Winter Olympic Games will mark the first time women will be able to compete in which of these disciplines?	SKI JUMPING
 2802	The 70s sitcom “Good Times” centers on a family with what last name?	EVANS
 2803	The A&E Web series “Hammertime” centers on the life and family of a musician best known for what ’90s megahit?	U CAN’T TOUCH THIS
+3558	What government agency has the ominous nickname “The Agency”?	CIA
 2804	The ab exercise that involves lying facedown and extending the arms forward over the head is aptly called what?	THE SUPERMAN
 2805	The ABC series that features jilted contestants from “The Bachelor” and “The Bachelorette” has what title?	BACHELOR PAD
 2806	The actor who played Capt. James T. Kirk on TV’s “Star Trek” also played which of these TV cops?	T.J. HOOKER
@@ -2826,7 +2837,6 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 3442	What classic Alfred Hitchcock film is set primarily in the seaside town of Bodega Bay, California?	THE BIRDS
 3443	What classic big-screen comedy is available in a special “Don’t Call Me Shirley! Edition” DVD?	AIRPLANE!
 3444	What classic brand name comes from the German word for “water” and the Greek word for “oil?”	VASELINE
-3445	What classic cartoon character has a romantic rival named Bluto?	POPEYE
 3446	What classic children’s book features the adventures of a boy named Milo and a watchdog named Tock?	THE PHANTOM TOLLBOOTH
 3447	What classic children’s book is subtitled “How Animals Become Real”?	THE VELVETEEN RABBIT
 3448	What classic comedy film is credited with popularizing toga parties on college campuses?	ANIMAL HOUSE
@@ -2936,8 +2946,6 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 3554	What future “Sex and the City” actress had a small role in the 1984 Oscar-winning film “Amadeus”?	CYNTHIA NIXON
 3555	What game show host’s constant smooching of female contestants won him the nickname “The Kissing Bandit”?	RICHARD DAWSON
 3556	What game’s name is aptly derived from a Swahili word meaning “to build”?	JENGA
-3557	What gaseous element makes up about 70 percent of the mass of the Sun?	HYDROGEN
-3558	What government agency has the ominous nickname “The Agency”?	CIA
 3559	What government agency has the ominous nickname “The Company”?	CIA
 3560	What grocery mascot is described as eight feet tall and five feet wide with three ice cubes on his head?	KOOL-AID MAN
 3561	What hit 1950s song features the line “A-wop-bop-a-loo-bop-a-lop-bam-boo”?	TUTTI-FRUTTI
@@ -3696,6 +3704,7 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 4314	Known for their classic fairy tale collections,the Brothers Grimm had what first names?	JACOB & WILHEIM
 4315	Known simply as “Cojo,” TV personality Steven Cojocaru is an expert in what field?	FASHION
 4316	Known to most Americans by his Anglicized name,Cristobal Colon was a famous what?	EXPLORER
+4372	Made by heating natural clays,burnt umber is a shade of what color?	BROWN
 4317	Known to ruin the occasional reputation,Page Six is a famous gossip column in what U.S. newspaper?	NEW YORK POST
 4318	Kurt Cobain and Jimi Hendrix are a part of a “morbid” club of musicians that all died at what all-too-early age?	27
 4319	La Petite Roche, a riverside rock formation once used for navigation, inspired the name of what state’s capital?	ARKANSAS
@@ -3751,7 +3760,6 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 4369	Lymph nodes are an important component of what human body system?	IMMUNE
 4370	Lynne Spears’s 2008 memoir “Through the Storm” chronicles the ups and downs of parenting a what?	POP STAR
 4371	Made by combining milk with a sweetened coffee syrup, “coffee milk” is the official beverage of what U.S. state/	RHODE ISLAND
-4372	Made by heating natural clays,burnt umber is a shade of what color?	BROWN
 4373	Made famous in the movie “Dracula,” Transylvania is a region of what country?	ROMANIA
 4374	Made popular by men in the 50s, what hairstyle is named after a French mistress from the 1700s?	POMPADOUR
 4375	Made with a beefy patty,an egg and beetroot,the McDonald’s Kiwiburger has only been sold in what country?	NEW ZEALAND
@@ -3913,6 +3921,7 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 4531	Often described as the nation’s largest block party,The Calle Ocho Festival takes place annually in what U.S. city?	MIAMI
 4532	Often dubbed “the St.Tropez of South America,” Punta del Este is an upscale resort located where?	URUGUAY
 4533	Often featuring a woman in white silhouette,a gem brooch that is carved in a raised design is called a what?	CAMEO
+4992	Who is Mario Lavandeira?	GOSSIP BLOGGER PEREZ HILTON
 4534	Often found in cafes throughout the Middle East, a hookah is an ancient device traditionally used to do what?	SMOKE TOBACCO
 4535	Often found in cafes throughout the Middle East,a hookah is an ancient device traditionally used to do what?	SMOKE TOBACCO
 4536	Often found in the pockets of new clothes,silica gel packets are “desiccants,” meaning they do what?	SOAK UP MOISTURE
@@ -4371,13 +4380,6 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 4989	Who is Curtis Stone?	AN AUSTRIAN CELEBRITY CHEF
 4990	Who is Dr. Egon Spendler?`	HARRY RAMIS IN “GHOSTBUSTERS”
 4991	Who is Laurence Tureaud?	MR. T
-4992	Who is Mario Lavandeira?	GOSSIP BLOGGER PEREZ HILTON
-4993	Who is Marshal Bruce Mathers III?	RAP STAR EMINEM
-4994	Who is Marshall Bruce Mathers III?	RAP STAR EMINEM
-4995	Who is Michael Buble?	GRAMMY-WINNING SINGER
-4996	Who is Reginald Dwight?	ELTON JOHN
-4997	Who is Rick Rubin?	MUSIC PRODUCER
-4998	Who is Rick Rubin?	MUSIC PRODUCER
 4999	Who is the only person currently featured on the front of U.S. paper currency whose portrait faces the observer’s left?	ALEXANDER HAMILTON
 5000	Who is the only person who has won Emmys for both Lead Actress in a Drama and Lead Actress in a Comedy?	EDIE FALCO
 5001	Who is the only U.S. president in history to serve two nonconsecutive terms?	GROVER CLEVELAND
@@ -4429,6 +4431,7 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 5047	“A is for Amy,who fell down the stairs,” is a quote from a book by what macabre writer-illustrator?	EDWARD GOREY
 5048	“Across the Universe” is 2007 film that showcases the music of what legendary group?	THE BEATLES
 5049	“Aggies,Immies,Shooters,and Swirls” is the title of a coffee table book devoted to what children’s game?	MARBLES
+5215	Which of these cable networks focuses on music,not movies?	CMT
 5050	“American Idol” judge Randy Jackson got his big break playing what instrument for the rock band Journey?	BASS GUITAR
 5051	“Ariel’s Beginning” is the sub-title of a 2008 straight-to-DVD prequel of what animated Disney movie?	THE LITTLE MERMAID
 5052	“As far back as I can remember,I always wanted to be a gangster,” is heard near the start of what Scorsese film?	GOODFELLAS
@@ -4594,7 +4597,6 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 5212	Which of these brave actresses appeared in a 2006 movie in which her head was shaved on screen?	NATALIE PORTMAN
 5213	Which of these breeds of dogs takes it name from the region in Germany where it was originally bred?	WEIMARANER
 5214	Which of these Broadway musicals was inspired by a famous painting?	SUNDAY IN THE PARK WITH GEORGE
-5215	Which of these cable networks focuses on music,not movies?	CMT
 5216	Which of these cable pundits is known for using an old-fashioned chalkboard as a visual aid?	GLEN BECK
 5217	Which of these cable reality series is usually set nearest to the Arctic Circle?	ICE ROAD TRUCKERS
 5218	Which of these cable TV news hosts once served in Congress as a Florida Republican?	JOE SCARBOROUGH
@@ -4996,9 +4998,10 @@ COPY trivia_questions_and_answers (id, question, answer) FROM stdin;
 -- Data for Name: trivia_scores; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY trivia_scores (id, score, nick) FROM stdin;
-asdfa	0	what?
-226380160734199808	5	suicide_mission
+COPY trivia_scores (id, score, nick, skip) FROM stdin;
+asdfa	0	what?	0
+226380160734199808	0	suicide_mission	0
+195899822346076160	0	Screech	0
 \.
 
 
@@ -5019,7 +5022,7 @@ ALTER TABLE ONLY trivia_scores
 
 
 --
--- Name: primary_key_vname; Type: CONSTRAINT; Schema: public; Owner: posgres; Tablespace: 
+-- Name: primary_key_vname; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
 --
 
 ALTER TABLE ONLY status
