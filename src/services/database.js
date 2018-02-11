@@ -118,7 +118,7 @@ export async function getCurrentTrivia() {
     const trivia_key = parseInt(res0.rows[0].vint);
 
     const res = await getClient().query(
-      "SELECT id, question, answer from trivia_questions_and_answers WHERE id = $1;",
+      "SELECT * from trivia_questions_and_answers WHERE id = $1;",
       [trivia_key]
     );
 
@@ -133,7 +133,7 @@ export async function getCurrentTrivia() {
 export async function getNewTrivia() {
   try {
     const res = await getClient().query(
-      "SELECT id, question, answer FROM trivia_questions_and_answers ORDER BY RANDOM() LIMIT 1",
+      "SELECT * FROM trivia_questions_and_answers ORDER BY RANDOM() LIMIT 1",
     );
 
     const trivia_key = parseInt(res.rows[0].id);
@@ -256,3 +256,27 @@ export async function resetTriviaSkip() {
   return 3;
 }
 
+
+export async function markTriviaNeedingHints(id, mark) {
+  try {
+
+    await getClient().query(
+      "UPDATE trivia_questions_and_answers SET mark=$2 WHERE id=$1", [id, mark]
+    );
+
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function setTriviaHints(id, hints) {
+  try {
+
+    await getClient().query(
+      "UPDATE trivia_questions_and_answers SET hints=$2 WHERE id=$1", [id, hints]
+    );
+
+  } catch (err) {
+    throw err;
+  }
+}

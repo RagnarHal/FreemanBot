@@ -10,12 +10,19 @@ export default async (message) => {
 
       const trivia = await getNewTrivia();
       message.reply('Times Up! New Question');
-      message.reply(`#${trivia.id}: ${trivia.question}`);
-
+      if (trivia.hints === "") {
+        message.reply(`#${trivia.id}: ${trivia.question}`);
+      } else {
+        message.reply(`#${trivia.id}: ${trivia.question} [${trivia.hints}]`);
+      }
     } else {
 
       const trivia = await getCurrentTrivia();
-      message.reply(`#${trivia.id}: ${trivia.question}`);
+      if (trivia.hints === "") {
+        message.reply(`#${trivia.id}: ${trivia.question}`);
+      } else {
+        message.reply(`#${trivia.id}: ${trivia.question} [${trivia.hints}]`);
+      }
     }
 
   } catch (err) {

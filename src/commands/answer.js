@@ -21,10 +21,15 @@ export default async (message, args = []) => {
 
       resetTriviaSkip();
 
-      const new_trivia = await getNewTrivia();
+      const ntrivia = await getNewTrivia();
 
       message.reply("You are Correct Sir. Your score is now " + String(score) + "pts");
-      message.reply(`New Question! #${new_trivia.id}: ${new_trivia.question}`);
+      message.reply("New Question!");
+      if (trivia.hints === "") {
+        message.reply(`#${ntrivia.id}: ${ntrivia.question}`);
+      } else {
+        message.reply(`#${ntrivia.id}: ${ntrivia.question} [${ntrivia.hints}]`);
+      }
 
     } else if (resp.indexOf(trivia.answer) !== -1 || trivia.answer.indexOf(resp) !== -1) {
       message.reply("You are Very Close Sir!");
