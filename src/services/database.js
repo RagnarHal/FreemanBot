@@ -164,14 +164,17 @@ export async function awardTriviaPoints(id, name, points) {
       "SELECT * FROM trivia_scores WHERE id=$1", [sid]
     );
 
+
     if (res.rows.length > 0) {
+
       await getClient().query(
         "UPDATE trivia_scores SET nick=$2, score=score+$3 WHERE id=$1", [sid, name, points]
       );
+    } else {
+      await getClient().query(
+        "INSERT INTO trivia_scores (id, nick, score) VALUES ($1, $2, $3)", [sid, name, points]
+      );
     }
-    await getClient().query(
-      "INSERT INTO trivia_scores (id, nick, score) VALUES ($1, $2, $3)", [sid, name, points]
-    );
 
 
   } catch (err) {
