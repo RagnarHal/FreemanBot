@@ -1,5 +1,47 @@
 const tempRegex = /(^|\s)[-+]?(\d+|\d+[.,]\d+)°?[CFK](?=[\b.\s]|$)/g;
 
+export const createMatrix = (numRows, numCols, initial) => {
+  const arr = [];
+  for (let i = 0; i < numRows; ++i) {
+    const columns = [];
+    for (let j = 0; j < numCols; ++j) {
+      columns[j] = initial;
+    }
+    arr[i] = columns;
+  }
+  return arr;
+};
+
+export const levenshtein = (str1, str2) => {
+  const a = createMatrix(str1.length + 1, str2.length + 1, 0);
+
+  for (let i = 1; i < str1.length + 1; i++) {
+    a[i][0] = i;
+  }
+
+  for (let j = 1; j < str2.length + 1; j++) {
+    a[0][j] = j;
+  }
+
+  for (let j = 1; j < str2.length + 1; j++) {
+    for (let i = 1; i < str1.length + 1; i++) {
+      let subCost;
+      if (str1[i - 1] === str2[j - 1]) {
+        subCost = 0;
+      } else {
+        subCost = 1;
+      }
+      a[i][j] = Math.min(
+        a[i - 1][j] + 1,
+        a[i][j - 1] + 1,
+        a[i - 1][j - 1] + subCost
+      );
+    }
+  }
+
+  return a[str1.length][str2.length];
+};
+
 // Get a random integer in range [0, upper) (upper is excluded)
 export function getRandomInteger(upper = 100) {
   return Math.floor(Math.random() * upper);
