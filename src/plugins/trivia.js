@@ -123,7 +123,7 @@ async function answer(message, params) {
     ) {
       message.reply("You are Very Close Sir!");
     } else {
-      message.reply("You are Wrong Sir!");
+      return;
     }
   } catch (err) {
     message.reply("I couldn't figure out how to get a random trivia question");
