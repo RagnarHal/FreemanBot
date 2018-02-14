@@ -11,7 +11,7 @@ function getClient() {
   if (!client) {
     client = new Client({
       connectionString: process.env.DATABASE_URL,
-      ssl: true
+      ssl: process.env.NODE_ENV === "production"
     });
   }
 
@@ -94,15 +94,14 @@ export function teardown() {
 export async function hasTriviaTimedout() {
   try {
     const res = await getClient().query(
-      "SELECT * FROM status WHERE vname='trivia_time'",
+      "SELECT * FROM status WHERE vname='trivia_time'"
     );
 
     const trivia_time = parseInt(res.rows[0].vint);
-    const current_time = parseInt((new Date).getTime());
+    const current_time = parseInt(new Date().getTime());
 
-    //if too much time has passed 
-    return ((current_time - trivia_time) > 120 * 1000);
-
+    //if too much time has passed
+    return current_time - trivia_time > 120 * 1000;
   } catch (err) {
     logger.error("hasTriviaTimedout error", err);
     throw err;
@@ -112,18 +111,17 @@ export async function hasTriviaTimedout() {
 export async function getCurrentTrivia() {
   try {
     const res0 = await getClient().query(
-      "SELECT * from status WHERE vname='trivia_key'",
+      "SELECT * from status WHERE vname='trivia_key'"
     );
 
     const trivia_key = parseInt(res0.rows[0].vint);
 
     const res = await getClient().query(
-      "SELECT id, question, answer from trivia_questions_and_answers WHERE id = $1;",
+      "SELECT * from trivia_questions_and_answers WHERE id = $1;",
       [trivia_key]
     );
 
     return res.rows[0];
-
   } catch (err) {
     logger.error("getCurrentTrivia error", err);
     throw err;
@@ -133,22 +131,23 @@ export async function getCurrentTrivia() {
 export async function getNewTrivia() {
   try {
     const res = await getClient().query(
-      "SELECT id, question, answer FROM trivia_questions_and_answers ORDER BY RANDOM() LIMIT 1",
+      "SELECT * FROM trivia_questions_and_answers ORDER BY RANDOM() LIMIT 1"
     );
 
     const trivia_key = parseInt(res.rows[0].id);
-    const trivia_time = parseInt((new Date).getTime());
+    const trivia_time = parseInt(new Date().getTime());
 
     await getClient().query(
-      "UPDATE status SET vint=$1 WHERE vname='trivia_key'", [trivia_key]
+      "UPDATE status SET vint=$1 WHERE vname='trivia_key'",
+      [trivia_key]
     );
 
     await getClient().query(
-      "UPDATE status SET vint=$1 WHERE vname='trivia_time'", [trivia_time]
+      "UPDATE status SET vint=$1 WHERE vname='trivia_time'",
+      [trivia_time]
     );
 
     return res.rows[0];
-
   } catch (err) {
     logger.error("getNewTrivia error", err);
     throw err;
@@ -157,25 +156,24 @@ export async function getNewTrivia() {
 
 export async function awardTriviaPoints(id, name, points) {
   try {
-
     const sid = String(id);
 
     const res = await getClient().query(
-      "SELECT * FROM trivia_scores WHERE id=$1", [sid]
+      "SELECT * FROM trivia_scores WHERE id=$1",
+      [sid]
     );
 
     if (res.rows.length > 0) {
-      console.log("there is an entry");
       await getClient().query(
-        "UPDATE trivia_scores SET nick=$2, score=score+$3 WHERE id=$1", [sid, name, points]
+        "UPDATE trivia_scores SET nick=$2, score=score+$3 WHERE id=$1",
+        [sid, name, points]
       );
     } else {
-      console.log("inserting an entry" + name);
       await getClient().query(
-        "INSERT INTO trivia_scores (id, nick, score) VALUES ($1, $2, $3)", [sid, name, points]
+        "INSERT INTO trivia_scores (id, nick, score) VALUES ($1, $2, $3)",
+        [sid, name, points]
       );
     }
-
   } catch (err) {
     logger.error("awardTriviaPoints error", err);
     throw err;
@@ -184,22 +182,85 @@ export async function awardTriviaPoints(id, name, points) {
 
 export async function getTriviaScore(id) {
   try {
-
     const sid = String(id);
 
     const res = await getClient().query(
-      "SELECT * FROM trivia_scores WHERE id = $1", [sid]
+      "SELECT * FROM trivia_scores WHERE id = $1",
+      [sid]
     );
 
     if (res.rows.length > 0) {
       return res.rows[0].score;
+    }
+  } catch (err) {
+    throw err;
+  }
+
+  return 0;
+}
+
+export async function voteTriviaSkip(id, name) {
+  try {
+    const sid = String(id);
+
+    const res1 = await getClient().query(
+      "SELECT * FROM trivia_scores WHERE id=$1",
+      [sid]
+    );
+
+    if (res1.rows.length > 0) {
+      try {
+        await getClient().query("UPDATE trivia_scores SET skip=1 WHERE id=$1", [
+          sid
+        ]);
+      } catch (err) {
+        throw err;
+      }
     } else {
-      return 2;
+      await getClient().query(
+        "INSERT INTO trivia_scores (id, nick, score, skip) VALUES ($1, $2, 0, 1)",
+        [sid, name]
+      );
     }
 
+    const res2 = await getClient().query(
+      "SELECT * FROM trivia_scores WHERE skip=1"
+    );
+
+    return res2.rows.length;
   } catch (err) {
-    console.log(err);
+    throw err;
+  }
+}
+
+export async function resetTriviaSkip() {
+  try {
+    await getClient().query("UPDATE trivia_scores SET skip=0");
+  } catch (err) {
+    throw err;
   }
 
   return 3;
+}
+
+export async function markTriviaNeedingHints(id, mark) {
+  try {
+    await getClient().query(
+      "UPDATE trivia_questions_and_answers SET mark=$2 WHERE id=$1",
+      [id, mark]
+    );
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function setTriviaHints(id, hints) {
+  try {
+    await getClient().query(
+      "UPDATE trivia_questions_and_answers SET hints=$2 WHERE id=$1",
+      [id, hints]
+    );
+  } catch (err) {
+    throw err;
+  }
 }
