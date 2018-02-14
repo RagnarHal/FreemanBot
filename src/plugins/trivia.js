@@ -1,4 +1,6 @@
 import * as db from "../services/database";
+import { levenshtein } from "../utils";
+import logger from "../logger";
 import config from "../config.json";
 
 function parseArgs(content) {
@@ -99,33 +101,33 @@ async function answer(message, params) {
 
     const resp = answer.content.toUpperCase();
 
-    if (resp === trivia.answer) {
+    const lev = levenshtein(resp, trivia.answer);
+    if (lev === 0) {
+      // TODO: Could awardTriviaPoints not return the new amount of points instead of having to call getTriviaScore?
       await db.awardTriviaPoints(message.author.id, message.author.username, 1);
-
       const score = await db.getTriviaScore(message.author.id);
 
       db.resetTriviaSkip();
 
-      const ntrivia = await db.getNewTrivia();
+      const newTrivia = await db.getNewTrivia();
 
-      message.reply(
-        "You are Correct Sir. Your score is now " + String(score) + "pts"
-      );
-      message.reply("New Question!");
+      message.reply(`Correct! Your score is now ${score} pts!`);
       if (trivia.hints === "") {
-        message.reply(`#${ntrivia.id}: ${ntrivia.question}`);
+        message.channel.send(
+          `New question! #${newTrivia.id}: ${newTrivia.question}`
+        );
       } else {
-        message.reply(`#${ntrivia.id}: ${ntrivia.question} [${ntrivia.hints}]`);
+        message.channel.send(
+          `New question! #${newTrivia.id}: ${newTrivia.question} [${
+            newTrivia.hints
+          }]`
+        );
       }
-    } else if (
-      resp.indexOf(trivia.answer) !== -1 ||
-      trivia.answer.indexOf(resp) !== -1
-    ) {
-      message.reply("You are Very Close Sir!");
-    } else {
-      return;
+    } else if (lev <= 3) {
+      message.reply("You are very close!");
     }
   } catch (err) {
+    logger.error(`Trivia answer: `, { message: err.message });
     message.reply("I couldn't figure out how to get a random trivia question");
   }
 }
