@@ -5,6 +5,7 @@ if (!process.env.BOT_TOKEN) {
 }
 
 import Discord from "discord.js";
+import trivia from "./plugins/trivia";
 import handlers from "./commands";
 import config from "./config.json";
 import logger from "./logger";
@@ -19,6 +20,22 @@ function handleCommand(message, command, args, client) {
       );
 }
 
+async function createTriviaChannel(guild) {
+  if (guild.channels.exists("name", "trivia")) {
+    logger.info(`Trivia channel for guild ${guild.name} already exists`);
+    return;
+  }
+
+  try {
+    await guild.createChannel("trivia", "text");
+    logger.info(`Created trivia channel for guild ${guild.name}`);
+  } catch (err) {
+    logger.error(`Unable to create trivia channel for guild ${guild.name}`, {
+      reason: err.message
+    });
+  }
+}
+
 export default function start() {
   const client = new Discord.Client();
   dbInit();
@@ -29,10 +46,18 @@ export default function start() {
         client.channels.size
       } channels of ${client.guilds.size} guilds.`
     );
+
+    logger.info("Creating trivia channels for guilds");
+    client.guilds.array().forEach(createTriviaChannel);
   });
 
   client.on("message", message => {
     if (message.author.bot) {
+      return;
+    }
+
+    if (message.channel.name === "trivia") {
+      trivia(message);
       return;
     }
 

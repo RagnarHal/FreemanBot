@@ -3,11 +3,7 @@ import logger from "./src/logger";
 import initBot from "./src/bot";
 import { teardown as dbTeardown } from "./src/services/database";
 
-try {
-  const bot = initBot();
-} catch (err) {
-  console.log(err);
-}
+const bot = initBot();
 
 process.on("SIGINT", async () => {
   logger.info(

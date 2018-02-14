@@ -10,8 +10,6 @@ import help from "./help";
 import quote from "./quote";
 import addquote from "./addquote";
 import lookup from "./lookup";
-import question from "./question";
-import answer from "./answer";
 import trivia from "./trivia";
 
 export default {
@@ -27,7 +25,5 @@ export default {
   quote,
   lookup,
   addquote,
-  question,
-  answer,
   trivia
 };
