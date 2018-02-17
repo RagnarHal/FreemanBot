@@ -78,19 +78,6 @@ export function teardown() {
     .catch(err => logger.error("Error disconnecting from database", err));
 }
 
-// export async function getTriviaById(id) {
-//   try {
-//     const res = await getClient().query(
-//       "SELECT id, question, answer from trivia_questions_and_answers WHERE ID=$1",
-//       [id]
-//     );
-//     return res.rows[0];
-//   } catch (err) {
-//     logger.error("getRandomQuestion error", err);
-//     throw err;
-//   }
-// }
-
 export async function hasTriviaTimedout() {
   try {
     const res = await getClient().query(
@@ -259,6 +246,72 @@ export async function setTriviaHints(id, hints) {
     await getClient().query(
       "UPDATE trivia_questions_and_answers SET hints=$2 WHERE id=$1",
       [id, hints]
+    );
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function getTriviaHintLevel() {
+  try {
+    const res = await getClient().query(
+      "SELECT vint FROM status WHERE vname='trivia_hints'"
+    );
+    return res.rows[0].vint;
+  } catch (err) {
+    throw err;
+  }
+
+}
+
+export async function increaseTriviaHintLevel() {
+  try {
+    await getClient().query(
+      "UPDATE status SET vint=vint+1 WHERE vname='trivia_hints' AND vint<3"
+    );
+
+  } catch (err) {
+    //don't throw
+  }
+}
+
+export async function resetTriviaHintLevel() {
+  try {
+    await getClient().query(
+      "UPDATE status SET vint=0 WHERE vname='trivia_hints'"
+    );
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function voteIncreaseTriviaHintLevel(id) {
+  try {
+    await getClient().query(
+      "UPDATE trivia_scores SET hints=1 WHERE id=$1", [id]
+    );
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function getTriviaHintVoteCount() {
+  try {
+    const res = await getClient().query(
+      "SELECT * FROM trivia_scores WHERE hints=1"
+    );
+
+    return res.rows.length;
+
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function resetTriviaHintVoteCount() {
+  try {
+    await getClient().query(
+      "UPDATE trivia_scores SET hints=0"
     );
   } catch (err) {
     throw err;
