@@ -197,7 +197,7 @@ export async function voteTriviaSkip(id, name) {
 
     if (res1.rows.length > 0) {
       try {
-        await getClient().query("UPDATE trivia_scores SET skip=1 WHERE id=$1", [
+        await getClient().query("UPDATE trivia_scores SET vote_skip=1 WHERE id=$1", [
           sid
         ]);
       } catch (err) {
@@ -205,13 +205,13 @@ export async function voteTriviaSkip(id, name) {
       }
     } else {
       await getClient().query(
-        "INSERT INTO trivia_scores (id, nick, score, skip) VALUES ($1, $2, 0, 1)",
+        "INSERT INTO trivia_scores (id, nick, score, vote_skip) VALUES ($1, $2, 0, 1)",
         [sid, name]
       );
     }
 
     const res2 = await getClient().query(
-      "SELECT * FROM trivia_scores WHERE skip=1"
+      "SELECT * FROM trivia_scores WHERE vote_skip=1"
     );
 
     return res2.rows.length;
@@ -222,7 +222,7 @@ export async function voteTriviaSkip(id, name) {
 
 export async function resetTriviaSkip() {
   try {
-    await getClient().query("UPDATE trivia_scores SET skip=0");
+    await getClient().query("UPDATE trivia_scores SET vote_skip=0");
   } catch (err) {
     throw err;
   }
@@ -255,7 +255,7 @@ export async function setTriviaHints(id, hints) {
 export async function getTriviaHintLevel() {
   try {
     const res = await getClient().query(
-      "SELECT vint FROM status WHERE vname='trivia_hints'"
+      "SELECT vint FROM status WHERE vname='trivia_hint_level'"
     );
     return res.rows[0].vint;
   } catch (err) {
@@ -267,7 +267,7 @@ export async function getTriviaHintLevel() {
 export async function increaseTriviaHintLevel() {
   try {
     await getClient().query(
-      "UPDATE status SET vint=vint+1 WHERE vname='trivia_hints' AND vint<3"
+      "UPDATE status SET vint=vint+1 WHERE vname='trivia_hint_level' AND vint<3"
     );
 
   } catch (err) {
@@ -278,7 +278,7 @@ export async function increaseTriviaHintLevel() {
 export async function resetTriviaHintLevel() {
   try {
     await getClient().query(
-      "UPDATE status SET vint=0 WHERE vname='trivia_hints'"
+      "UPDATE status SET vint=0 WHERE vname='trivia_hint_level'"
     );
   } catch (err) {
     throw err;
@@ -288,7 +288,7 @@ export async function resetTriviaHintLevel() {
 export async function voteIncreaseTriviaHintLevel(id) {
   try {
     await getClient().query(
-      "UPDATE trivia_scores SET hints=1 WHERE id=$1", [id]
+      "UPDATE trivia_scores SET vote_hint=1 WHERE id=$1", [id]
     );
   } catch (err) {
     throw err;
@@ -298,7 +298,7 @@ export async function voteIncreaseTriviaHintLevel(id) {
 export async function getTriviaHintVoteCount() {
   try {
     const res = await getClient().query(
-      "SELECT * FROM trivia_scores WHERE hints=1"
+      "SELECT * FROM trivia_scores WHERE vote_hint=1"
     );
 
     return res.rows.length;
@@ -311,7 +311,7 @@ export async function getTriviaHintVoteCount() {
 export async function resetTriviaHintVoteCount() {
   try {
     await getClient().query(
-      "UPDATE trivia_scores SET hints=0"
+      "UPDATE trivia_scores SET vote_hint=0"
     );
   } catch (err) {
     throw err;

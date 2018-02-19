@@ -34,7 +34,10 @@ async function skip(message) {
   );
 
   if (skipCount >= 2) {
+
+    await db.resetTriviaHintVoteCount();
     await db.resetTriviaSkip();
+    await db.resetTriviaHintLevel();
 
     const newTrivia = await db.getNewTrivia();
 
@@ -67,12 +70,14 @@ async function hints(message, params) {
 
 function hintShow(str, lvl) {
 
-  let count = 1;
+  let count = 0;
   let endstr = "";
 
-  if (lvl === 0) {
+  if (lvl <= 0) {
     return "";
   }
+
+  const level = lvl - 1;
 
 
   for (let i = 0; i < str.length; i++) {
@@ -80,7 +85,7 @@ function hintShow(str, lvl) {
     const upper = c.toUpperCase();
 
     if ((upper >= "A" && upper <= "Z") || (upper >= "0" && upper <= "9")) {
-      if (count === lvl) {
+      if (count >= level) {
         endstr += ".";
       } else {
         count += 1;
@@ -88,7 +93,7 @@ function hintShow(str, lvl) {
       }
 
     } else {
-      count = 1;
+      count = 0;
       endstr += c;
     }
   }
@@ -108,10 +113,18 @@ function createTriviaQuestionString(trivia, level) {
   }
 
   if (level > 0) {
-    resp += "\nHint: " + hintShow(trivia.answer, db.getTriviaHintLevel());
+    resp += "\nHint: " + hintShow(trivia.answer, level);
   }
 
   return resp;
+}
+
+function pointsPerHintLevel(hint_level) {
+  if (hint_level === 0) return 5;
+  if (hint_level === 1) return 3;
+  if (hint_level === 2) return 2;
+
+  return 1;
 }
 
 async function question(message) {
@@ -119,6 +132,11 @@ async function question(message) {
     const req_new = await db.hasTriviaTimedout();
 
     if (req_new) {
+
+      await db.resetTriviaHintVoteCount();
+      await db.resetTriviaSkip();
+      await db.resetTriviaHintLevel();
+
       const trivia = await db.getNewTrivia();
       const hint_level = await db.getTriviaHintLevel();
       message.reply("Times Up! New Question");
@@ -136,7 +154,7 @@ async function question(message) {
 
 async function answer(message, params) {
   try {
-    const trivia = await db.getCurrentTrivia();
+    let trivia = await db.getCurrentTrivia();
 
     const answer = {
       content: params.join(" "),
@@ -145,19 +163,25 @@ async function answer(message, params) {
 
     const resp = answer.content.toUpperCase();
 
-    const lev = levenshtein(resp, trivia.answer);
+    const lev = levenshtein(resp, trivia.answer.toUpperCase());
     if (lev === 0) {
-      // TODO: Could awardTriviaPoints not return the new amount of points instead of having to call getTriviaScore?
-      await db.awardTriviaPoints(message.author.id, message.author.username, 1);
-      const score = await db.getTriviaScore(message.author.id);
 
-      db.resetTriviaSkip();
-
-      const trivia = await db.getNewTrivia();
       const hint_level = await db.getTriviaHintLevel();
 
+      const points = pointsPerHintLevel(hint_level);
+
+      // TODO: Could awardTriviaPoints not return the new amount of points instead of having to call getTriviaScore?
+      await db.awardTriviaPoints(message.author.id, message.author.username, points);
+      const score = await db.getTriviaScore(message.author.id);
+
+      await db.resetTriviaHintVoteCount();
+      await db.resetTriviaSkip();
+      await db.resetTriviaHintLevel();
+
+      trivia = await db.getNewTrivia();
+
       message.reply(`Correct! Your score is now ${score} pts!`);
-      message.reply(createTriviaQuestionString(trivia, hint_level));
+      message.reply(createTriviaQuestionString(trivia, 0)); //new trivia always resets the hint level
 
     } else if (lev <= 3) {
       message.reply("You are very close!");
@@ -170,26 +194,25 @@ async function answer(message, params) {
 
 // player votes to increase trivia hints
 async function hint(message) {
-  await db.voteIncreaseTriviaHintLevel();
+  await db.voteIncreaseTriviaHintLevel(message.author.id);
 
-  const voters = db.getTriviaHintVoteCount();
+  const voters = await db.getTriviaHintVoteCount();
 
   // minimum of 2 players agree to increase hint level
-  if (voters > 2) {
+  if (voters >= 2) {
     await db.resetTriviaHintVoteCount();
+    await db.resetTriviaSkip();
     await db.increaseTriviaHintLevel();
 
     const trivia = await db.getCurrentTrivia();
     const hint_level = await db.getTriviaHintLevel();
 
-    message.reply("Hint Level now at " + hint_level);
+    message.reply("Hint Level now at " + hint_level + ". Points Awarded reduced to " + pointsPerHintLevel(hint_level));
 
     message.reply(createTriviaQuestionString(trivia, hint_level));
 
   } else {
-    const hint_level = await db.getTriviaHintLevel();
-
-    message.reply("Need " + (2 - hint_level) + " more to increase hint level");
+    message.reply(`Hint requested! Need ${2 - voters} more to skip question`);
   }
 }
 
