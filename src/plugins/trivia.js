@@ -212,7 +212,7 @@ async function hint(message) {
     message.reply(createTriviaQuestionString(trivia, hint_level));
 
   } else {
-    message.reply(`Hint requested! Need ${2 - voters} more to skip question`);
+    message.reply(`Hint requested! Need ${2 - voters} more to increase hint level`);
   }
 }
 
