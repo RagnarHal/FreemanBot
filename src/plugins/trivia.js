@@ -29,10 +29,8 @@ async function score(message) {
 
 
 // 3x performance improvement using one command
-async function resetVotingSkipAndHints() {
-  await db.resetTriviaHintVoteCount();
-  await db.resetTriviaSkip();
-  await db.resetTriviaHintLevel();
+function resetVotingSkipAndHints() {
+  return Promise.all([db.resetTriviaHintVoteCount(), db.resetTriviaSkip(), db.resetTriviaHintLevel()]);
 }
 
 async function skip(message) {
@@ -43,7 +41,7 @@ async function skip(message) {
 
   if (skipCount >= 2) {
 
-    await resetVotingSkipAndHints();
+    resetVotingSkipAndHints();
 
     const newTrivia = await db.getNewTrivia();
 
@@ -139,7 +137,7 @@ async function question(message) {
 
     if (req_new) {
 
-      await resetVotingSkipAndHints();
+      resetVotingSkipAndHints();
 
       const trivia = await db.getNewTrivia();
       const hint_level = await db.getTriviaHintLevel();
@@ -178,7 +176,7 @@ async function answer(message, params) {
       await db.awardTriviaPoints(message.author.id, message.author.username, points);
       const score = await db.getTriviaScore(message.author.id);
 
-      await resetVotingSkipAndHints();
+      resetVotingSkipAndHints();
 
       trivia = await db.getNewTrivia();
 
