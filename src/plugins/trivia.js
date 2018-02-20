@@ -27,6 +27,15 @@ async function score(message) {
   message.reply(`your score is ${points} pts`);
 }
 
+// 3x performance improvement using one command
+function resetVotingSkipAndHints() {
+  return Promise.all([
+    db.resetTriviaHintVoteCount(),
+    db.resetTriviaSkip(),
+    db.resetTriviaHintLevel()
+  ]);
+}
+
 async function skip(message) {
   const skipCount = await db.voteTriviaSkip(
     message.author.id,
@@ -34,7 +43,7 @@ async function skip(message) {
   );
 
   if (skipCount >= 2) {
-    await db.resetTriviaSkip();
+    await resetVotingSkipAndHints();
 
     const newTrivia = await db.getNewTrivia();
 
@@ -65,25 +74,74 @@ async function hints(message, params) {
   }
 }
 
+function hintShow(str, lvl) {
+  let count = 0;
+  let endstr = "";
+
+  if (lvl <= 0) {
+    return "";
+  }
+
+  const level = lvl - 1;
+
+  for (let i = 0; i < str.length; i++) {
+    const c = str.charAt(i);
+    const upper = c.toUpperCase();
+
+    if ((upper >= "A" && upper <= "Z") || (upper >= "0" && upper <= "9")) {
+      if (count >= level) {
+        endstr += ".";
+      } else {
+        count += 1;
+        endstr += c;
+      }
+    } else {
+      count = 0;
+      endstr += c;
+    }
+  }
+  return endstr;
+}
+
+function createTriviaQuestionString(trivia, level) {
+  let resp = "";
+
+  if (trivia.hints === "") {
+    resp = `#${trivia.id}: ${trivia.question}`;
+  } else {
+    resp = `#${trivia.id}: ${trivia.question} [${trivia.hints}]`;
+  }
+
+  if (level > 0) {
+    resp += "\nHint: " + hintShow(trivia.answer, level);
+  }
+
+  return resp;
+}
+
+function pointsPerHintLevel(hint_level) {
+  if (hint_level === 0) return 5;
+  if (hint_level === 1) return 3;
+  if (hint_level === 2) return 2;
+
+  return 1;
+}
+
 async function question(message) {
   try {
     const req_new = await db.hasTriviaTimedout();
 
     if (req_new) {
+      await resetVotingSkipAndHints();
+
       const trivia = await db.getNewTrivia();
+      const hint_level = await db.getTriviaHintLevel();
       message.reply("Times Up! New Question");
-      if (trivia.hints === "") {
-        message.reply(`#${trivia.id}: ${trivia.question}`);
-      } else {
-        message.reply(`#${trivia.id}: ${trivia.question} [${trivia.hints}]`);
-      }
+      message.reply(createTriviaQuestionString(trivia, hint_level));
     } else {
       const trivia = await db.getCurrentTrivia();
-      if (trivia.hints === "") {
-        message.reply(`#${trivia.id}: ${trivia.question}`);
-      } else {
-        message.reply(`#${trivia.id}: ${trivia.question} [${trivia.hints}]`);
-      }
+      const hint_level = await db.getTriviaHintLevel();
+      message.reply(createTriviaQuestionString(trivia, hint_level));
     }
   } catch (err) {
     message.reply("I couldn't figure out how to get a random trivia question");
@@ -92,7 +150,7 @@ async function question(message) {
 
 async function answer(message, params) {
   try {
-    const trivia = await db.getCurrentTrivia();
+    let trivia = await db.getCurrentTrivia();
 
     const answer = {
       content: params.join(" "),
@@ -101,34 +159,62 @@ async function answer(message, params) {
 
     const resp = answer.content.toUpperCase();
 
-    const lev = levenshtein(resp, trivia.answer);
+    const lev = levenshtein(resp, trivia.answer.toUpperCase());
     if (lev === 0) {
+      const hint_level = await db.getTriviaHintLevel();
+
+      const points = pointsPerHintLevel(hint_level);
+
       // TODO: Could awardTriviaPoints not return the new amount of points instead of having to call getTriviaScore?
-      await db.awardTriviaPoints(message.author.id, message.author.username, 1);
+      await db.awardTriviaPoints(
+        message.author.id,
+        message.author.username,
+        points
+      );
       const score = await db.getTriviaScore(message.author.id);
 
-      db.resetTriviaSkip();
+      await resetVotingSkipAndHints();
 
-      const newTrivia = await db.getNewTrivia();
+      trivia = await db.getNewTrivia();
 
       message.reply(`Correct! Your score is now ${score} pts!`);
-      if (trivia.hints === "") {
-        message.channel.send(
-          `New question! #${newTrivia.id}: ${newTrivia.question}`
-        );
-      } else {
-        message.channel.send(
-          `New question! #${newTrivia.id}: ${newTrivia.question} [${
-            newTrivia.hints
-          }]`
-        );
-      }
+      message.reply(createTriviaQuestionString(trivia, 0)); //new trivia always resets the hint level
     } else if (lev <= 3) {
       message.reply("You are very close!");
     }
   } catch (err) {
     logger.error(`Trivia answer: `, { message: err.message });
     message.reply("I couldn't figure out how to get a random trivia question");
+  }
+}
+
+// player votes to increase trivia hints
+async function hint(message) {
+  await db.voteIncreaseTriviaHintLevel(message.author.id);
+
+  const voters = await db.getTriviaHintVoteCount();
+
+  // minimum of 2 players agree to increase hint level
+  if (voters >= 2) {
+    await db.resetTriviaHintVoteCount();
+    await db.resetTriviaSkip();
+    await db.increaseTriviaHintLevel();
+
+    const trivia = await db.getCurrentTrivia();
+    const hint_level = await db.getTriviaHintLevel();
+
+    message.reply(
+      "Hint Level now at " +
+        hint_level +
+        ". Points Awarded reduced to " +
+        pointsPerHintLevel(parseInt(hint_level))
+    );
+
+    message.reply(createTriviaQuestionString(trivia, hint_level));
+  } else {
+    message.reply(
+      `Hint requested! Need ${2 - voters} more to increase hint level`
+    );
   }
 }
 
@@ -141,6 +227,7 @@ const commands = {
   skip,
   mark,
   hints,
+  hint,
   question,
   answer,
   help
