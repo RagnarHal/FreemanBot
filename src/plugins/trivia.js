@@ -27,6 +27,14 @@ async function score(message) {
   message.reply(`your score is ${points} pts`);
 }
 
+
+// 3x performance improvement using one command
+async function resetVotingSkipAndHints() {
+  await db.resetTriviaHintVoteCount();
+  await db.resetTriviaSkip();
+  await db.resetTriviaHintLevel();
+}
+
 async function skip(message) {
   const skipCount = await db.voteTriviaSkip(
     message.author.id,
@@ -35,9 +43,7 @@ async function skip(message) {
 
   if (skipCount >= 2) {
 
-    await db.resetTriviaHintVoteCount();
-    await db.resetTriviaSkip();
-    await db.resetTriviaHintLevel();
+    await resetVotingSkipAndHints();
 
     const newTrivia = await db.getNewTrivia();
 
@@ -133,9 +139,7 @@ async function question(message) {
 
     if (req_new) {
 
-      await db.resetTriviaHintVoteCount();
-      await db.resetTriviaSkip();
-      await db.resetTriviaHintLevel();
+      await resetVotingSkipAndHints();
 
       const trivia = await db.getNewTrivia();
       const hint_level = await db.getTriviaHintLevel();
@@ -174,9 +178,7 @@ async function answer(message, params) {
       await db.awardTriviaPoints(message.author.id, message.author.username, points);
       const score = await db.getTriviaScore(message.author.id);
 
-      await db.resetTriviaHintVoteCount();
-      await db.resetTriviaSkip();
-      await db.resetTriviaHintLevel();
+      await resetVotingSkipAndHints();
 
       trivia = await db.getNewTrivia();
 
@@ -207,7 +209,7 @@ async function hint(message) {
     const trivia = await db.getCurrentTrivia();
     const hint_level = await db.getTriviaHintLevel();
 
-    message.reply("Hint Level now at " + hint_level + ". Points Awarded reduced to " + pointsPerHintLevel(hint_level));
+    message.reply("Hint Level now at " + hint_level + ". Points Awarded reduced to " + pointsPerHintLevel(parseInt(hint_level)));
 
     message.reply(createTriviaQuestionString(trivia, hint_level));
 

@@ -242,25 +242,20 @@ export async function markTriviaNeedingHints(id, mark) {
 }
 
 export async function setTriviaHints(id, hints) {
-  try {
-    await getClient().query(
-      "UPDATE trivia_questions_and_answers SET hints=$2 WHERE id=$1",
-      [id, hints]
-    );
-  } catch (err) {
-    throw err;
-  }
+
+  await getClient().query(
+    "UPDATE trivia_questions_and_answers SET hints=$2 WHERE id=$1",
+    [id, hints]
+  );
+
 }
 
 export async function getTriviaHintLevel() {
-  try {
-    const res = await getClient().query(
-      "SELECT vint FROM status WHERE vname='trivia_hint_level'"
-    );
-    return res.rows[0].vint;
-  } catch (err) {
-    throw err;
-  }
+
+  const res = await getClient().query(
+    "SELECT vint FROM status WHERE vname='trivia_hint_level'"
+  );
+  return res.rows[0].vint;
 
 }
 
@@ -271,49 +266,35 @@ export async function increaseTriviaHintLevel() {
     );
 
   } catch (err) {
-    //don't throw
+    //don't throw because not updatig passed 3 is acceptable
   }
 }
 
 export async function resetTriviaHintLevel() {
-  try {
-    await getClient().query(
-      "UPDATE status SET vint=0 WHERE vname='trivia_hint_level'"
-    );
-  } catch (err) {
-    throw err;
-  }
+
+  await getClient().query(
+    "UPDATE status SET vint=0 WHERE vname='trivia_hint_level'"
+  );
 }
 
 export async function voteIncreaseTriviaHintLevel(id) {
-  try {
-    await getClient().query(
-      "UPDATE trivia_scores SET vote_hint=1 WHERE id=$1", [id]
-    );
-  } catch (err) {
-    throw err;
-  }
+  await getClient().query(
+    "UPDATE trivia_scores SET vote_hint=1 WHERE id=$1", [id]
+  );
 }
 
 export async function getTriviaHintVoteCount() {
-  try {
-    const res = await getClient().query(
-      "SELECT * FROM trivia_scores WHERE vote_hint=1"
-    );
 
-    return res.rows.length;
+  const res = await getClient().query(
+    "SELECT * FROM trivia_scores WHERE vote_hint=1"
+  );
 
-  } catch (err) {
-    throw err;
-  }
+  return res.rows.length;
 }
 
 export async function resetTriviaHintVoteCount() {
-  try {
-    await getClient().query(
-      "UPDATE trivia_scores SET vote_hint=0"
-    );
-  } catch (err) {
-    throw err;
-  }
+
+  await getClient().query(
+    "UPDATE trivia_scores SET vote_hint=0"
+  );
 }
