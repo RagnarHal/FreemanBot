@@ -30,10 +30,14 @@ export function hintShow(str, lvl) {
 export function createTriviaQuestionString(trivia, level) {
   let resp = "";
 
+  const points = pointsPerHintLevel(parseInt(level));
+
   if (trivia.hints === "") {
-    resp = `#${trivia.id}: ${trivia.question}`;
+    resp = `#${trivia.id}: ${trivia.question} (${points} pts)`;
   } else {
-    resp = `#${trivia.id}: ${trivia.question} [${trivia.hints}]`;
+    resp = `#${trivia.id}: ${trivia.question} (${points} pts) [${
+      trivia.hints
+    }]`;
   }
 
   if (level > 0) {

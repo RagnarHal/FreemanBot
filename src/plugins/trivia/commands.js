@@ -1,10 +1,7 @@
 import * as db from "../../services/database";
 import { levenshtein } from "../../utils";
 import logger from "../../logger";
-import {
-  pointsPerHintLevel,
-  createTriviaQuestionString
-} from './helpers';
+import { pointsPerHintLevel, createTriviaQuestionString } from "./helpers";
 
 export async function help(message) {
   message.reply("Try using: score, skip");
@@ -21,8 +18,8 @@ export async function hint(message) {
 
   const voters = await db.getTriviaHintVoteCount();
 
-  // minimum of 2 players agree to increase hint level
-  if (voters >= 2) {
+  // minimum of 1 players agree to increase hint level (and reduce points)
+  if (voters >= 1) {
     await db.resetTriviaHintVoteCount();
     await db.resetTriviaSkip();
     await db.increaseTriviaHintLevel();
@@ -32,9 +29,9 @@ export async function hint(message) {
 
     message.reply(
       "Hint Level now at " +
-      hint_level +
-      ". Points Awarded reduced to " +
-      pointsPerHintLevel(parseInt(hint_level))
+        hint_level +
+        ". Points Awarded reduced to " +
+        pointsPerHintLevel(parseInt(hint_level))
     );
 
     message.reply(createTriviaQuestionString(trivia, hint_level));
