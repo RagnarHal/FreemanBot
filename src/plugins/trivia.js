@@ -106,10 +106,14 @@ function hintShow(str, lvl) {
 function createTriviaQuestionString(trivia, level) {
   let resp = "";
 
+  const points = pointsPerHintLevel(parseInt(level));
+
   if (trivia.hints === "") {
-    resp = `#${trivia.id}: ${trivia.question}`;
+    resp = `#${trivia.id}: ${trivia.question} (${points} pts)`;
   } else {
-    resp = `#${trivia.id}: ${trivia.question} [${trivia.hints}]`;
+    resp = `#${trivia.id}: ${trivia.question} (${points} pts) [${
+      trivia.hints
+    }]`;
   }
 
   if (level > 0) {
@@ -194,8 +198,8 @@ async function hint(message) {
 
   const voters = await db.getTriviaHintVoteCount();
 
-  // minimum of 2 players agree to increase hint level
-  if (voters >= 2) {
+  // minimum of 1 players agree to increase hint level (and reduce points)
+  if (voters >= 1) {
     await db.resetTriviaHintVoteCount();
     await db.resetTriviaSkip();
     await db.increaseTriviaHintLevel();
