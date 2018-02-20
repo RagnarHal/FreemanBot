@@ -163,7 +163,7 @@ async function answer(message, params) {
     if (lev === 0) {
       const hint_level = await db.getTriviaHintLevel();
 
-      const points = pointsPerHintLevel(hint_level);
+      const points = pointsPerHintLevel(parseInt(hint_level));
 
       // TODO: Could awardTriviaPoints not return the new amount of points instead of having to call getTriviaScore?
       await db.awardTriviaPoints(
@@ -205,9 +205,9 @@ async function hint(message) {
 
     message.reply(
       "Hint Level now at " +
-        hint_level +
-        ". Points Awarded reduced to " +
-        pointsPerHintLevel(parseInt(hint_level))
+      hint_level +
+      ". Points Awarded reduced to " +
+      pointsPerHintLevel(parseInt(hint_level))
     );
 
     message.reply(createTriviaQuestionString(trivia, hint_level));
