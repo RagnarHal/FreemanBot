@@ -27,10 +27,13 @@ async function score(message) {
   message.reply(`your score is ${points} pts`);
 }
 
-
 // 3x performance improvement using one command
 function resetVotingSkipAndHints() {
-  return Promise.all([db.resetTriviaHintVoteCount(), db.resetTriviaSkip(), db.resetTriviaHintLevel()]);
+  return Promise.all([
+    db.resetTriviaHintVoteCount(),
+    db.resetTriviaSkip(),
+    db.resetTriviaHintLevel()
+  ]);
 }
 
 async function skip(message) {
@@ -40,8 +43,7 @@ async function skip(message) {
   );
 
   if (skipCount >= 2) {
-
-    resetVotingSkipAndHints();
+    await resetVotingSkipAndHints();
 
     const newTrivia = await db.getNewTrivia();
 
@@ -73,7 +75,6 @@ async function hints(message, params) {
 }
 
 function hintShow(str, lvl) {
-
   let count = 0;
   let endstr = "";
 
@@ -82,7 +83,6 @@ function hintShow(str, lvl) {
   }
 
   const level = lvl - 1;
-
 
   for (let i = 0; i < str.length; i++) {
     const c = str.charAt(i);
@@ -95,19 +95,15 @@ function hintShow(str, lvl) {
         count += 1;
         endstr += c;
       }
-
     } else {
       count = 0;
       endstr += c;
     }
   }
   return endstr;
-
-
 }
 
 function createTriviaQuestionString(trivia, level) {
-
   let resp = "";
 
   if (trivia.hints === "") {
@@ -136,14 +132,12 @@ async function question(message) {
     const req_new = await db.hasTriviaTimedout();
 
     if (req_new) {
-
-      resetVotingSkipAndHints();
+      await resetVotingSkipAndHints();
 
       const trivia = await db.getNewTrivia();
       const hint_level = await db.getTriviaHintLevel();
       message.reply("Times Up! New Question");
       message.reply(createTriviaQuestionString(trivia, hint_level));
-
     } else {
       const trivia = await db.getCurrentTrivia();
       const hint_level = await db.getTriviaHintLevel();
@@ -167,22 +161,24 @@ async function answer(message, params) {
 
     const lev = levenshtein(resp, trivia.answer.toUpperCase());
     if (lev === 0) {
-
       const hint_level = await db.getTriviaHintLevel();
 
       const points = pointsPerHintLevel(hint_level);
 
       // TODO: Could awardTriviaPoints not return the new amount of points instead of having to call getTriviaScore?
-      await db.awardTriviaPoints(message.author.id, message.author.username, points);
+      await db.awardTriviaPoints(
+        message.author.id,
+        message.author.username,
+        points
+      );
       const score = await db.getTriviaScore(message.author.id);
 
-      resetVotingSkipAndHints();
+      await resetVotingSkipAndHints();
 
       trivia = await db.getNewTrivia();
 
       message.reply(`Correct! Your score is now ${score} pts!`);
       message.reply(createTriviaQuestionString(trivia, 0)); //new trivia always resets the hint level
-
     } else if (lev <= 3) {
       message.reply("You are very close!");
     }
@@ -207,12 +203,18 @@ async function hint(message) {
     const trivia = await db.getCurrentTrivia();
     const hint_level = await db.getTriviaHintLevel();
 
-    message.reply("Hint Level now at " + hint_level + ". Points Awarded reduced to " + pointsPerHintLevel(parseInt(hint_level)));
+    message.reply(
+      "Hint Level now at " +
+        hint_level +
+        ". Points Awarded reduced to " +
+        pointsPerHintLevel(parseInt(hint_level))
+    );
 
     message.reply(createTriviaQuestionString(trivia, hint_level));
-
   } else {
-    message.reply(`Hint requested! Need ${2 - voters} more to increase hint level`);
+    message.reply(
+      `Hint requested! Need ${2 - voters} more to increase hint level`
+    );
   }
 }
 
