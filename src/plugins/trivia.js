@@ -113,7 +113,7 @@ function createTriviaQuestionString(trivia, level) {
   } else {
     resp = `#${trivia.id}: ${trivia.question} (${points} pts) [${
       trivia.hints
-    }]`;
+      }]`;
   }
 
   if (level > 0) {
@@ -161,9 +161,10 @@ async function answer(message, params) {
       timestamp: Date.now()
     };
 
-    const resp = answer.content.toUpperCase();
+    const resp = answer.content.trim().toUpperCase();
+    const ans = trivia.answer.trim().toUpperCase()
 
-    const lev = levenshtein(resp, trivia.answer.toUpperCase());
+    const lev = levenshtein(resp, ans);
     if (lev === 0) {
       const hint_level = await db.getTriviaHintLevel();
 
@@ -209,9 +210,9 @@ async function hint(message) {
 
     message.reply(
       "Hint Level now at " +
-        hint_level +
-        ". Points Awarded reduced to " +
-        pointsPerHintLevel(parseInt(hint_level))
+      hint_level +
+      ". Points Awarded reduced to " +
+      pointsPerHintLevel(parseInt(hint_level))
     );
 
     message.reply(createTriviaQuestionString(trivia, hint_level));
