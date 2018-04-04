@@ -1,8 +1,8 @@
 import logger from "../../logger";
-import { getClient } from "./database";
+import { getPool } from "./database";
 
 async function getCurrentTriviaTime() {
-  const { rows } = await getClient().query(
+  const { rows } = await getPool().query(
     "SELECT * FROM status WHERE vname='trivia_time'"
   );
 
@@ -10,7 +10,7 @@ async function getCurrentTriviaTime() {
 }
 
 async function getCurrentTriviaKey() {
-  const { rows } = await getClient().query(
+  const { rows } = await getPool().query(
     "SELECT * from status WHERE vname='trivia_key'"
   );
 
@@ -18,7 +18,7 @@ async function getCurrentTriviaKey() {
 }
 
 async function getTriviaById(id) {
-  const { rows } = await getClient().query(
+  const { rows } = await getPool().query(
     "SELECT * from trivia_questions_and_answers WHERE id = $1;",
     [id]
   );
@@ -27,7 +27,7 @@ async function getTriviaById(id) {
 }
 
 async function getRandomTrivia() {
-  const { rows } = await getClient().query(
+  const { rows } = await getPool().query(
     "SELECT * FROM trivia_questions_and_answers ORDER BY RANDOM() LIMIT 1"
   );
 
@@ -35,7 +35,7 @@ async function getRandomTrivia() {
 }
 
 async function getUserScore(userId) {
-  const { rows } = await getClient().query(
+  const { rows } = await getPool().query(
     "SELECT * FROM trivia_scores WHERE id=$1",
     [userId]
   );
@@ -44,21 +44,20 @@ async function getUserScore(userId) {
 }
 
 function setCurrentTriviaKey(triviaKey) {
-  return getClient().query(
-    "UPDATE status SET vint=$1 WHERE vname='trivia_key'",
-    [triviaKey]
-  );
+  return getPool().query("UPDATE status SET vint=$1 WHERE vname='trivia_key'", [
+    triviaKey
+  ]);
 }
 
 function setCurrentTriviaTime(triviaTime) {
-  return getClient().query(
+  return getPool().query(
     "UPDATE status SET vint=$1 WHERE vname='trivia_time'",
     [triviaTime]
   );
 }
 
 export async function getTriviaHintVoteCount() {
-  const res = await getClient().query(
+  const res = await getPool().query(
     "SELECT COUNT(*) FROM trivia_scores WHERE vote_hint=1"
   );
 
@@ -66,7 +65,7 @@ export async function getTriviaHintVoteCount() {
 }
 
 export function resetTriviaHintVoteCount() {
-  return getClient().query("UPDATE trivia_scores SET vote_hint=0");
+  return getPool().query("UPDATE trivia_scores SET vote_hint=0");
 }
 
 export async function hasTriviaTimedout() {
@@ -91,7 +90,7 @@ export async function beginNewRound() {
   const triviaTime = Date.now();
 
   try {
-    await getClient().query("BEGIN");
+    await getPool().query("BEGIN");
     await Promise.all([
       setCurrentTriviaKey(triviaKey),
       setCurrentTriviaTime(triviaTime),
@@ -99,14 +98,14 @@ export async function beginNewRound() {
       resetTriviaSkip(),
       resetTriviaHintLevel()
     ]);
-    await getClient().query("COMMIT");
+    await getPool().query("COMMIT");
 
     return trivia;
   } catch (err) {
     logger.error("beginNewRound error. Executing rollback", {
       reason: err.message
     });
-    await getClient().query("ROLLBACK");
+    await getPool().query("ROLLBACK");
     throw err;
   }
 }
@@ -117,11 +116,7 @@ export async function awardTriviaPoints(userId, userName, points) {
     ? "UPDATE trivia_scores SET nick=$2, score=score+$3 WHERE id=$1 RETURNING *"
     : "INSERT INTO trivia_scores (id, nick, score) VALUES ($1, $2, $3) RETURNING *";
 
-  const { rows } = await getClient().query(queryText, [
-    userId,
-    userName,
-    points
-  ]);
+  const { rows } = await getPool().query(queryText, [userId, userName, points]);
 
   return rows[0].score;
 }
@@ -139,9 +134,9 @@ export async function voteTriviaSkip(userId, userName) {
     : "INSERT INTO trivia_scores (id, nick, score, vote_skip) VALUES ($1, $2, 0, 1)";
   const queryParams = userScore ? [userId] : [userId, userName];
 
-  await getClient().query(queryText, queryParams);
+  await getPool().query(queryText, queryParams);
 
-  const skipCount = await getClient().query(
+  const skipCount = await getPool().query(
     "SELECT COUNT(*) FROM trivia_scores WHERE vote_skip=1"
   );
 
@@ -149,25 +144,25 @@ export async function voteTriviaSkip(userId, userName) {
 }
 
 export function resetTriviaSkip() {
-  return getClient().query("UPDATE trivia_scores SET vote_skip=0");
+  return getPool().query("UPDATE trivia_scores SET vote_skip=0");
 }
 
 export function markTriviaNeedingHints(id, mark) {
-  return getClient().query(
+  return getPool().query(
     "UPDATE trivia_questions_and_answers SET mark=$2 WHERE id=$1",
     [id, mark]
   );
 }
 
 export function setTriviaHints(userId, hints) {
-  return getClient().query(
+  return getPool().query(
     "UPDATE trivia_questions_and_answers SET hints=$2 WHERE id=$1",
     [userId, hints]
   );
 }
 
 export async function getTriviaHintLevel() {
-  const res = await getClient().query(
+  const res = await getPool().query(
     "SELECT vint FROM status WHERE vname='trivia_hint_level'"
   );
   return res.rows[0].vint;
@@ -175,7 +170,7 @@ export async function getTriviaHintLevel() {
 
 export async function increaseTriviaHintLevel() {
   try {
-    await getClient().query(
+    await getPool().query(
       "UPDATE status SET vint=vint+1 WHERE vname='trivia_hint_level' AND vint<3"
     );
   } catch (err) {
@@ -184,13 +179,13 @@ export async function increaseTriviaHintLevel() {
 }
 
 export function resetTriviaHintLevel() {
-  return getClient().query(
+  return getPool().query(
     "UPDATE status SET vint=0 WHERE vname='trivia_hint_level'"
   );
 }
 
 export function voteIncreaseTriviaHintLevel(userId) {
-  return getClient().query("UPDATE trivia_scores SET vote_hint=1 WHERE id=$1", [
+  return getPool().query("UPDATE trivia_scores SET vote_hint=1 WHERE id=$1", [
     userId
   ]);
 }

@@ -1,9 +1,9 @@
 import logger from "../../logger";
-import { getClient } from "./database";
+import { getPool } from "./database";
 
 export async function getRandomQuote() {
   try {
-    const res = await getClient().query(
+    const res = await getPool().query(
       "SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1"
     );
 
@@ -18,7 +18,7 @@ export async function getRandomQuote() {
 
 export async function getQuoteById(id) {
   try {
-    const res = await getClient().query("SELECT * FROM quotes WHERE id = $1;", [
+    const res = await getPool().query("SELECT * FROM quotes WHERE id = $1;", [
       id
     ]);
 
@@ -35,7 +35,7 @@ export async function getQuoteById(id) {
 
 export async function addQuote({ author, content, timestamp, valid }) {
   try {
-    const res = await getClient().query(
+    const res = await getPool().query(
       "INSERT INTO quotes (author, content, timestamp, valid) VALUES ($1, $2, $3, $4) RETURNING *",
       [author, content, timestamp, valid]
     );
