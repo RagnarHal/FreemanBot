@@ -1,22 +1,15 @@
-if (
-  !process.env.OXFORD_APP_ID ||
-  !process.env.OXFORD_APP_KEY ||
-  !process.env.OXFORD_BASE_URL
-) {
-  throw new Error(
-    "App ID or App Key missing for Oxford Dictionary API (OXFORD_APP_ID, OXFORD_APP_KEY)"
-  );
-}
-
 import axios from "axios";
 import logger from "../logger";
+import env from "../env";
+
+const { baseUrl, timeout, appId, appKey } = env.oxford;
 
 const httpClient = axios.create({
-  baseURL: process.env.OXFORD_BASE_URL,
-  timeout: 5000,
+  baseURL: baseUrl,
+  timeout,
   headers: {
-    app_id: process.env.OXFORD_APP_ID,
-    app_key: process.env.OXFORD_APP_KEY
+    app_id: appId,
+    app_key: appKey
   }
 });
 

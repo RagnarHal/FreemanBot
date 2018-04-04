@@ -1,4 +1,3 @@
-import "dotenv/config";
 import logger from "./src/logger";
 import initBot from "./src/bot";
 import { teardown as dbTeardown } from "./src/services/database";
