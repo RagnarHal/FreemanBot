@@ -29,14 +29,23 @@ function handleCommand(command, message, params) {
 }
 
 export default message => {
-  const commandTrigger = `${config.prefix}trivia`;
+  const commandTriggerTrivia = `${config.prefix}trivia`;
+  const commandTriggerQuestion = `${config.prefix}question`;
+  const commandTriggerHint = `${config.prefix}hint`;
 
-  const hasCommandTrigger = message.content.indexOf(commandTrigger) === 0;
-  const cmd = hasCommandTrigger ? parseCommand(message.content) : "answer";
+  let cmd = "answer";
+  let params = message.content.split(" ");
 
-  const params = hasCommandTrigger
-    ? parseParams(message.content)
-    : message.content.split(" ");
+  if (message.content.indexOf(commandTriggerTrivia) === 0) {
+    cmd = parseCommand(message.content);
+    params = parseParams(message.content);
+  } else if (message.content.indexOf(commandTriggerQuestion) === 0) {
+    cmd = "question";
+    params = "";
+  } else if (message.content.indexOf(commandTriggerHint) === 0) {
+    cmd = "hint";
+    params = "";
+  }
 
   handleCommand(cmd, message, params);
 };

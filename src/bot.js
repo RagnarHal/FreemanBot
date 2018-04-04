@@ -1,15 +1,10 @@
-if (!process.env.BOT_TOKEN) {
-  throw new Error(
-    "Discord token not found, please include it as a BOT_TOKEN environment variable"
-  );
-}
-
 import Discord from "discord.js";
 import trivia from "./plugins/trivia";
 import handlers from "./commands";
 import config from "./config.json";
 import logger from "./logger";
 import { init as dbInit } from "./services/database";
+import env from "./env";
 
 function handleCommand(message, command, args, client) {
   const handler = handlers[command];
@@ -82,6 +77,6 @@ export default function start() {
     handleCommand(message, command, args, client);
   });
 
-  client.login(process.env.BOT_TOKEN);
+  client.login(env.botToken);
   return client;
 }

@@ -1,16 +1,14 @@
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable missing");
-}
-import logger from "../../logger";
 import { Client } from "pg";
+import logger from "../../logger";
+import env from "../../env";
 
 let client;
 
 export function getClient() {
   if (!client) {
     client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === "production"
+      connectionString: env.postgres.connectionString,
+      ssl: env.isProduction
     });
   }
 

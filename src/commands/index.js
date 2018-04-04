@@ -24,6 +24,6 @@ export default {
   time,
   quote,
   lookup,
-  addquote,
+  231: addquote,
   trivia
 };
