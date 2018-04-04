@@ -11,6 +11,7 @@ import quote from "./quote";
 import addquote from "./addquote";
 import lookup from "./lookup";
 import trivia from "./trivia";
+import remind from "./remind";
 
 export default {
   help,
@@ -25,5 +26,6 @@ export default {
   quote,
   lookup,
   231: addquote,
-  trivia
+  trivia,
+  remind
 };
