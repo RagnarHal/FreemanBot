@@ -3,7 +3,6 @@ import trivia from "./plugins/trivia";
 import handlers from "./commands";
 import config from "./config.json";
 import logger from "./logger";
-import { init as dbInit } from "./services/database";
 import env from "./env";
 
 function handleCommand(message, command, args, client) {
@@ -33,7 +32,6 @@ async function createTriviaChannel(guild) {
 
 export default function start() {
   const client = new Discord.Client();
-  dbInit();
 
   client.on("ready", () => {
     logger.info(
