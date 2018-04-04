@@ -8,36 +8,48 @@ export async function help(message) {
 }
 
 export async function score(message) {
-  const points = await db.getTriviaScore(message.author.id);
-  message.reply(`your score is ${points} pts`);
+  try {
+    const points = await db.getTriviaScore(message.author.id);
+    message.reply(`your score is ${points} pts`);
+  } catch (err) {
+    message.reply(
+      "I'm having trouble communicating with the database, please try again later"
+    );
+  }
 }
 
 // player votes to increase trivia hints
 export async function hint(message) {
-  await db.voteIncreaseTriviaHintLevel(message.author.id);
+  try {
+    await db.voteIncreaseTriviaHintLevel(message.author.id);
 
-  const voters = await db.getTriviaHintVoteCount();
+    const voters = await db.getTriviaHintVoteCount();
 
-  // minimum of 1 players agree to increase hint level (and reduce points)
-  if (voters >= 1) {
-    await db.resetTriviaHintVoteCount();
-    await db.resetTriviaSkip();
-    await db.increaseTriviaHintLevel();
+    // minimum of 1 players agree to increase hint level (and reduce points)
+    if (voters >= 1) {
+      await db.resetTriviaHintVoteCount();
+      await db.resetTriviaSkip();
+      await db.increaseTriviaHintLevel();
 
-    const trivia = await db.getCurrentTrivia();
-    const hint_level = await db.getTriviaHintLevel();
+      const trivia = await db.getCurrentTrivia();
+      const hint_level = await db.getTriviaHintLevel();
 
+      message.reply(
+        "Hint Level now at " +
+          hint_level +
+          ". Points Awarded reduced to " +
+          pointsPerHintLevel(parseInt(hint_level))
+      );
+
+      message.reply(createTriviaQuestionString(trivia, hint_level));
+    } else {
+      message.reply(
+        `Hint requested! Need ${2 - voters} more to increase hint level`
+      );
+    }
+  } catch (err) {
     message.reply(
-      "Hint Level now at " +
-        hint_level +
-        ". Points Awarded reduced to " +
-        pointsPerHintLevel(parseInt(hint_level))
-    );
-
-    message.reply(createTriviaQuestionString(trivia, hint_level));
-  } else {
-    message.reply(
-      `Hint requested! Need ${2 - voters} more to increase hint level`
+      "I'm having trouble communicating with the database, please try again later"
     );
   }
 }
@@ -51,9 +63,10 @@ export async function answer(message, params) {
       timestamp: Date.now()
     };
 
-    const resp = answer.content.toUpperCase();
+    const resp = answer.content.trim().toUpperCase();
+    const ans = trivia.answer.trim().toUpperCase();
 
-    const lev = levenshtein(resp, trivia.answer.toUpperCase());
+    const lev = levenshtein(resp, ans);
     if (lev === 0) {
       const hint_level = await db.getTriviaHintLevel();
 
@@ -75,7 +88,6 @@ export async function answer(message, params) {
     }
   } catch (err) {
     logger.error(`Trivia answer: `, { message: err.message });
-    message.reply("I couldn't figure out how to get a random trivia question");
   }
 }
 
@@ -94,25 +106,35 @@ export async function question(message) {
       message.reply(createTriviaQuestionString(trivia, hint_level));
     }
   } catch (err) {
-    message.reply("I couldn't figure out how to get a random trivia question");
+    message.reply(
+      "I'm having trouble communicating with the database, try again later"
+    );
   }
 }
 
 export async function skip(message) {
-  const skipCount = await db.voteTriviaSkip(
-    message.author.id,
-    message.author.username
-  );
+  try {
+    const skipCount = await db.voteTriviaSkip(
+      message.author.id,
+      message.author.username
+    );
 
-  if (skipCount >= 2) {
-    const newTrivia = await db.beginNewRound();
+    if (skipCount >= 2) {
+      const newTrivia = await db.beginNewRound();
 
-    return message.reply(
-      `Trivia skipped! New question: #${newTrivia.id}: ${newTrivia.question}`
+      return message.reply(
+        `Trivia skipped! New question: #${newTrivia.id}: ${newTrivia.question}`
+      );
+    }
+
+    message.reply(
+      `Skip requested! Need ${2 - skipCount} more to skip question`
+    );
+  } catch (err) {
+    message.reply(
+      "I'm having trouble communicating with the database, try again later"
     );
   }
-
-  message.reply(`Skip requested! Need ${2 - skipCount} more to skip question`);
 }
 
 export async function hints(message, params) {
@@ -128,8 +150,14 @@ export async function hints(message, params) {
 }
 
 export async function mark(message) {
-  const trivia = await db.getCurrentTrivia();
+  try {
+    const trivia = await db.getCurrentTrivia();
 
-  await db.markTriviaNeedingHints(trivia.id, 1);
-  message.reply(`Trivia #${trivia.id} marked for revision`);
+    await db.markTriviaNeedingHints(trivia.id, 1);
+    message.reply(`Trivia #${trivia.id} marked for revision`);
+  } catch (err) {
+    message.reply(
+      "I'm having trouble communicating with the database, try again later"
+    );
+  }
 }
