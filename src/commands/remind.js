@@ -27,9 +27,21 @@ export default (message, args = []) => {
 
   const subjectUser = resolveUser(message, subject);
 
+  if (!subjectUser) {
+    message.reply(`I couldn't find the user ${subject}`);
+    return;
+  }
+
   const { eventTitle, startDate /* endDate, isAllDay */ } = sherlock.parse(
     reminder
   );
+
+  if (!startDate) {
+    message.reply(
+      "I didn't get that, I was unable to deduce the time for the reminder"
+    );
+    return;
+  }
 
   const date = mmt(startDate).format("ddd MMM Do YYYY");
   const time = mmt(startDate).format("HH:mm");
