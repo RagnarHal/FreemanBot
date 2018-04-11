@@ -39,7 +39,7 @@ export default (message, args = []) => {
     return;
   }
 
-  let argument = args[0];
+  let argument = args.join("");
 
   if (argument === "rick") {
     message.reply("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
