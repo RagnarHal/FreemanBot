@@ -1,10 +1,11 @@
 import logger from "../logger";
 import config from "../config.json";
+import { helpText as rollHelp } from "./roll";
 
 const commands = [
   {
     command: "help",
-    description: "Show this help message in a private message"
+    description: "Show this help message in a private message."
   },
   {
     command: "ping",
@@ -20,9 +21,8 @@ const commands = [
     description: "Put words in my mouth"
   },
   {
-    command: "roll <n>",
-    description:
-      "I'll roll an n-sided die. I'll roll a 100-sided die if no argument is specified"
+    command: "roll <input>",
+    description: rollHelp
   },
   {
     command: "hug",
