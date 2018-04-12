@@ -44,7 +44,7 @@ export const levenshtein = (str1, str2) => {
 
 // Get a random integer in range [0, upper) (upper is excluded)
 export function getRandomInteger(upper = 100) {
-  return Math.floor(Math.random() * upper);
+  return Math.floor(Math.random() * Math.floor(upper));
 }
 
 export function precisionRound(n, precision) {
