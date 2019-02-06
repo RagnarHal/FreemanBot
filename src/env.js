@@ -11,6 +11,10 @@ export default {
   postgres: {
     connectionString: process.env.DATABASE_URL
   },
+  firebase: {
+    user: process.env.FIREBASE_USER,
+    password: process.env.FIREBASE_PASSWORD
+  },
   oxford: {
     appId: process.env.OXFORD_APP_ID,
     appKey: process.env.OXFORD_APP_KEY,
