@@ -1,4 +1,4 @@
-import { addQuote } from "../services/database";
+import { addQuote } from "../services/quotes";
 
 export default async (message, args = []) => {
   if (!args.length) {

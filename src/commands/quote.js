@@ -1,5 +1,5 @@
 import moment from "moment-timezone";
-import { getRandomQuote, getQuoteById } from "../services/database";
+import { getRandomQuote, getQuoteById } from "../services/quotes";
 
 export default async (message, args = []) => {
   let quote = null;
@@ -24,9 +24,9 @@ export default async (message, args = []) => {
 
   quote !== null
     ? message.channel.send(
-        `#${quote.id}: "${quote.content}" - **${quote.author}** ${moment(
-          parseInt(quote.timestamp)
-        ).format("MMM Do YYYY")}`
-      )
+      `#${quote.id}: "${quote.content}" - **${quote.author}** ${moment(
+        parseInt(quote.timestamp)
+      ).format("MMM Do YYYY")}`
+    )
     : message.reply("I couldn't find that quote...");
 };

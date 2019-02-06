@@ -3,7 +3,7 @@ import "dotenv/config";
 export default {
   node: process.env.NODE_ENV,
   isProduction: process.env.NODE_ENV === "production",
-  isDevelop: process.env.NODE_ENV === "develop",
+  isDevelop: process.env.NODE_ENV === "development",
   botToken: process.env.BOT_TOKEN,
   google: {
     apiKey: process.env.GOOGLE_API_KEY
