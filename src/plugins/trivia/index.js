@@ -29,9 +29,17 @@ function handleCommand(command, message, params) {
 }
 
 export default message => {
+  if (!message.guild) {
+    message.reply('Trivia is only available for Guilds');
+    return;
+  }
+
   const commandTriggerTrivia = `${config.prefix}trivia`;
   const commandTriggerQuestion = `${config.prefix}question`;
   const commandTriggerHint = `${config.prefix}hint`;
+  const commandTriggerSkip = `${config.prefix}skip`;
+  const commandTriggerReport = `${config.prefix}report`;
+  const commandTriggerScore = `${config.prefix}score`;
 
   let cmd = "answer";
   let params = message.content.split(" ");
@@ -44,6 +52,15 @@ export default message => {
     params = "";
   } else if (message.content.indexOf(commandTriggerHint) === 0) {
     cmd = "hint";
+    params = "";
+  } else if (message.content.indexOf(commandTriggerSkip) === 0) {
+    cmd = "skip";
+    params = "";
+  } else if (message.content.indexOf(commandTriggerReport) === 0) {
+    cmd = "report";
+    params = "";
+  } else if (message.content.indexOf(commandTriggerScore) === 0) {
+    cmd = "score";
     params = "";
   }
 

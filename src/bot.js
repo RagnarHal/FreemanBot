@@ -1,5 +1,6 @@
 import Discord from "discord.js";
 import trivia from "./plugins/trivia";
+import { setupNewGuildIfNotExists } from './services/trivia';
 import handlers from "./commands";
 import config from "./config.json";
 import logger from "./logger";
@@ -10,11 +11,13 @@ function handleCommand(message, command, args, client) {
   typeof handler === "function"
     ? handler(message, args, client)
     : message.reply(
-        `I don't know how to handle a ${config.prefix}${command} command...`
-      );
+      `I don't know how to handle a ${config.prefix}${command} command...`
+    );
 }
 
 async function createTriviaChannel(guild) {
+  await setupNewGuildIfNotExists(guild.id);
+
   if (guild.channels.exists("name", "trivia")) {
     logger.info(`Trivia channel for guild ${guild.name} already exists`);
     return;
@@ -36,7 +39,7 @@ export default function start() {
   client.on("ready", () => {
     logger.info(
       `Bot has started, with ${client.users.size} users, in ${
-        client.channels.size
+      client.channels.size
       } channels of ${client.guilds.size} guilds.`
     );
 
