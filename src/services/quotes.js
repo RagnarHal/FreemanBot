@@ -1,34 +1,17 @@
 import logger from '../logger';
-import db from '../firestore';
-import { getRandomInteger } from '../utils';
+import firebase from 'firebase';
+import { getRandomDocumentInCollection } from '../firestore';
 import env from '../env';
 
+const db = firebase.firestore();
 const QUOTES_COLLECTION = env.isDevelop ? 'quotes--dev' : 'quotes';
 const COUNTERS_COLLECTION = env.isDevelop ? 'counters--dev' : 'counters';
 
 const quotesRef = db.collection(QUOTES_COLLECTION);
 const quotesCounterRef = db.collection(COUNTERS_COLLECTION).doc('quotes');
 
-export async function getRandomQuote(maxQuoteId, retryCount = 0) {
-  if (retryCount >= 4) {
-    return null;
-  }
-
-  if (!maxQuoteId) {
-    const querySnapshot = await quotesCounterRef.get();
-    maxQuoteId = querySnapshot.data().count
-  }
-
-  const randomQuoteId = getRandomInteger(maxQuoteId) + 1;
-  const quote = await getQuoteById(randomQuoteId);
-
-  if (!quote) {
-    // Quote with given random ID doesn't exist, try again
-    return getRandomQuote(maxQuoteId, retryCount++);
-  }
-
-  logger.info("Random quote successfully fetched", quote);
-  return quote
+export async function getRandomQuote() {
+  return getRandomDocumentInCollection(quotesRef);
 }
 
 export async function getQuoteById(id) {
@@ -56,6 +39,7 @@ export async function addQuote({ author, content, timestamp, valid }) {
 
     transaction.update(quotesCounterRef, { count: newCount });
     transaction.set(quotesRef.doc(), { id: newCount, author, content, timestamp, valid });
+
     return newCount;
   })
 }

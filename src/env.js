@@ -8,9 +8,6 @@ export default {
   google: {
     apiKey: process.env.GOOGLE_API_KEY
   },
-  postgres: {
-    connectionString: process.env.DATABASE_URL
-  },
   firebase: {
     user: process.env.FIREBASE_USER,
     password: process.env.FIREBASE_PASSWORD

@@ -1,4 +1,4 @@
-import * as db from "../../services/database";
+import * as db from "../../services/trivia";
 import { levenshtein } from "../../utils";
 import logger from "../../logger";
 import { pointsPerHintLevel, createTriviaQuestionString } from "./helpers";
@@ -8,8 +8,10 @@ export async function help(message) {
 }
 
 export async function score(message) {
+  const { author, guild } = message;
+
   try {
-    const points = await db.getTriviaScore(message.author.id);
+    const points = await db.getTriviaScore(guild.id, author.id);
     message.reply(`your score is ${points} pts`);
   } catch (err) {
     message.reply(
@@ -20,28 +22,26 @@ export async function score(message) {
 
 // player votes to increase trivia hints
 export async function hint(message) {
+  const { author, guild } = message;
+
   try {
-    await db.voteIncreaseTriviaHintLevel(message.author.id);
+    await db.voteIncreaseTriviaHintLevel(guild.id, author.id);
 
-    const voters = await db.getTriviaHintVoteCount();
+    const voters = await db.getTriviaHintVoteCount(guild.id);
 
-    // minimum of 1 players agree to increase hint level (and reduce points)
-    if (voters >= 1) {
-      await db.resetTriviaHintVoteCount();
-      await db.resetTriviaSkip();
-      await db.increaseTriviaHintLevel();
-
-      const trivia = await db.getCurrentTrivia();
-      const hint_level = await db.getTriviaHintLevel();
+    // minimum of 2 players agree to increase hint level (and reduce points)
+    if (voters >= 2) {
+      const newHintLevel = await db.increaseTriviaHintLevel(guild.id);
+      const trivia = await db.getCurrentTrivia(guild.id);
 
       message.reply(
         "Hint Level now at " +
-          hint_level +
-          ". Points Awarded reduced to " +
-          pointsPerHintLevel(parseInt(hint_level))
+        newHintLevel +
+        ". Points Awarded reduced to " +
+        pointsPerHintLevel(parseInt(newHintLevel))
       );
 
-      message.reply(createTriviaQuestionString(trivia, hint_level));
+      message.reply(createTriviaQuestionString(trivia, newHintLevel));
     } else {
       message.reply(
         `Hint requested! Need ${2 - voters} more to increase hint level`
@@ -55,8 +55,10 @@ export async function hint(message) {
 }
 
 export async function answer(message, params) {
+  const { author, guild } = message;
+
   try {
-    let trivia = await db.getCurrentTrivia();
+    let trivia = await db.getCurrentTrivia(guild.id);
 
     const answer = {
       content: params.join(" "),
@@ -68,44 +70,50 @@ export async function answer(message, params) {
 
     const lev = levenshtein(resp, ans);
     if (lev === 0) {
-      const hint_level = await db.getTriviaHintLevel();
+      const hintLevel = await db.getTriviaHintLevel(guild.id);
 
-      const points = pointsPerHintLevel(parseInt(hint_level));
+      const points = pointsPerHintLevel(parseInt(hintLevel));
 
       const score = await db.awardTriviaPoints(
-        message.author.id,
-        message.author.username,
+        guild.id,
+        author.id,
+        author.username,
         points
       );
 
       message.reply(`Correct! Your score is now ${score} pts!`);
 
-      trivia = await db.beginNewRound();
+      trivia = await db.beginNewRound(guild.id);
 
       message.reply(createTriviaQuestionString(trivia, 0));
     } else if (lev <= 3) {
       message.reply("You are very close!");
     }
   } catch (err) {
-    logger.error(`Trivia answer: `, { message: err.message });
+    logger.error({ message: err.message, stack: err.stack });
   }
 }
 
 export async function question(message) {
-  try {
-    const req_new = await db.hasTriviaTimedout();
+  const { guild } = message;
 
-    if (req_new) {
-      const trivia = await db.beginNewRound();
-      const hint_level = await db.getTriviaHintLevel();
+  try {
+    const shouldRefreshQuestion = await db.hasTriviaTimedOut(guild.id);
+
+    if (shouldRefreshQuestion) {
+      const trivia = await db.beginNewRound(guild.id);
       message.reply("Times Up! New Question");
-      message.reply(createTriviaQuestionString(trivia, hint_level));
+      message.reply(createTriviaQuestionString(trivia, 0));
     } else {
-      const trivia = await db.getCurrentTrivia();
-      const hint_level = await db.getTriviaHintLevel();
-      message.reply(createTriviaQuestionString(trivia, hint_level));
+      const [trivia, hintLevel] = await Promise.all([
+        db.getCurrentTrivia(guild.id),
+        db.getTriviaHintLevel(guild.id)
+      ])
+
+      message.reply(createTriviaQuestionString(trivia, hintLevel));
     }
   } catch (err) {
+    logger.error({ message: err.message, stack: err.stack })
     message.reply(
       "I'm having trouble communicating with the database, try again later"
     );
@@ -113,14 +121,16 @@ export async function question(message) {
 }
 
 export async function skip(message) {
+  const { guild, author } = message;
+
   try {
     const skipCount = await db.voteTriviaSkip(
-      message.author.id,
-      message.author.username
+      guild.id,
+      author.id
     );
 
     if (skipCount >= 2) {
-      const newTrivia = await db.beginNewRound();
+      const newTrivia = await db.beginNewRound(guild.id);
 
       return message.reply(
         `Trivia skipped! New question: #${newTrivia.id}: ${newTrivia.question}`
@@ -137,24 +147,13 @@ export async function skip(message) {
   }
 }
 
-export async function hints(message, params) {
-  if (params.length > 1) {
-    const id = parseInt(params[0]);
-    const newHints = params.slice(1).join(" ");
+export async function report(message) {
+  const { guild } = message;
 
-    await db.setTriviaHints(id, newHints);
-    message.reply("Added Hints!");
-  } else {
-    message.reply("Hints missing params");
-  }
-}
-
-export async function mark(message) {
   try {
-    const trivia = await db.getCurrentTrivia();
+    const trivia = await db.reportCurrentTriviaQuestion(guild.id);
 
-    await db.markTriviaNeedingHints(trivia.id, 1);
-    message.reply(`Trivia #${trivia.id} marked for revision`);
+    message.reply(`Trivia #${trivia.id} reported`);
   } catch (err) {
     message.reply(
       "I'm having trouble communicating with the database, try again later"

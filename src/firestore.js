@@ -14,4 +14,30 @@ firebase.initializeApp({
 
 firebase.auth().signInWithEmailAndPassword(env.firebase.user, env.firebase.password);
 
-export default firebase.firestore();
+export const FieldValue = firebase.firestore.FieldValue;
+export const FieldPath = firebase.firestore.FieldPath;
+
+export async function getRandomDocumentSnapshotInCollection(collectionRef, retryCount = 0) {
+  const querySnapshot = await collectionRef
+    .where(FieldPath.documentId(), '>', collectionRef.doc().id)
+    .limit(1)
+    .get();
+
+  // Prevent infinite loop
+  if (retryCount > 10) {
+    return null;
+  }
+
+  // If a document was not found, try again
+  if (!querySnapshot.docs.length) {
+    return getRandomDocumentSnapshotInCollection(collectionRef, retryCount++);
+  }
+
+  return querySnapshot.docs[0];
+}
+
+export async function getRandomDocumentInCollection(collectionRef) {
+  const docRef = await getRandomDocumentSnapshotInCollection(collectionRef);
+
+  return docRef.data();
+}

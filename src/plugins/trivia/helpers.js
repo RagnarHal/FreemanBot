@@ -28,17 +28,8 @@ export function hintShow(str, lvl) {
 }
 
 export function createTriviaQuestionString(trivia, level) {
-  let resp = "";
-
   const points = pointsPerHintLevel(parseInt(level));
-
-  if (trivia.hints === "") {
-    resp = `#${trivia.id}: ${trivia.question} (${points} pts)`;
-  } else {
-    resp = `#${trivia.id}: ${trivia.question} (${points} pts) [${
-      trivia.hints
-    }]`;
-  }
+  let resp = `#${trivia.id}: ${trivia.question} (${points} pts)`
 
   if (level > 0) {
     resp += "\nHint: " + hintShow(trivia.answer, level);
