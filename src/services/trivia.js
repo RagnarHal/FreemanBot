@@ -71,6 +71,25 @@ export async function beginNewRound(guildId) {
   return triviaSnapshot.data();
 }
 
+export async function reportTriviaQuestion(triviaId) {
+  const querySnapshot = await questionsRef.where('id', '==', triviaId).limit(1).get();
+
+  if (!querySnapshot.docs.length) {
+    return false;
+  }
+
+  const questionRef = querySnapshot.docs[0].ref;
+
+  return db.runTransaction(async transaction => {
+    const question = await transaction.get(questionRef);
+    const newReportsCount = question.data().reports + 1;
+
+    transaction.update(questionRef, { reports: newReportsCount });
+
+    return Object.assign(question.data(), { reports: newReportsCount });
+  })
+}
+
 export async function reportCurrentTriviaQuestion(guildId) {
   const guildStatus = await getGuildStatusDoc(guildId);
 
@@ -78,18 +97,11 @@ export async function reportCurrentTriviaQuestion(guildId) {
     throw new Error('No question! Whoopsie!');
   }
 
-  const currentQuestionRef = guildStatus.currentQuestion;
-
-  return db.runTransaction(async transaction => {
-    const question = await transaction.get(currentQuestionRef);
-
-    const newReportsCount = question.data().reports + 1;
-
-    transaction.update(currentQuestionRef, { reports: newReportsCount });
-
-    return Object.assign(question.data(), { reports: newReportsCount });
-  })
-
+  const currentQuestionSnapshot = guildStatus.currentQuestion.get();
+  if (currentQuestionSnapshot.exists) {
+    const currentQuestionId = currentQuestionSnapshot.data().id;
+    return reportTriviaQuestion(currentQuestionId)
+  }
 }
 
 /// Scores

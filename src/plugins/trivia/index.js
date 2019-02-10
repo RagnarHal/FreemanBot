@@ -58,7 +58,7 @@ export default message => {
     params = "";
   } else if (message.content.indexOf(commandTriggerReport) === 0) {
     cmd = "report";
-    params = "";
+    params = parseArgs(message.content)
   } else if (message.content.indexOf(commandTriggerScore) === 0) {
     cmd = "score";
     params = "";
