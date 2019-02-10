@@ -147,16 +147,38 @@ export async function skip(message) {
   }
 }
 
-export async function report(message) {
+export async function report(message, params) {
   const { guild } = message;
 
-  try {
-    const trivia = await db.reportCurrentTriviaQuestion(guild.id);
+  let triviaId;
+  if (params.length) {
+    triviaId = parseInt(params[0]);
+  } else {
+    try {
+      const trivia = await db.getCurrentTrivia(guild.id);
+      triviaId = trivia.id;
+    } catch (err) {
+      logger.error({ message: err.message, stack: err.stack });
+      message.reply('I am having trouble connecting to the database, try again later');
+      return;
+    }
+  }
 
-    message.reply(`Trivia #${trivia.id} reported`);
+  if (isNaN(triviaId)) {
+    message.reply('Invalid trivia ID');
+    return;
+  }
+
+  try {
+    const res = await db.reportTriviaQuestion(triviaId);
+    if (!res) {
+      message.reply(`Trivia #${triviaId} not found`);
+      return;
+    }
+
+    message.reply(`Trivia #${triviaId} reported`);
   } catch (err) {
-    message.reply(
-      "I'm having trouble communicating with the database, try again later"
-    );
+    logger.error({ message: err.message, stack: err.stack });
+    message.reply('I am having trouble connecting to the database, try again later');
   }
 }
