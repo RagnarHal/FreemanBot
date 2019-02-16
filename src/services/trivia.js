@@ -90,20 +90,6 @@ export async function reportTriviaQuestion(triviaId) {
   })
 }
 
-export async function reportCurrentTriviaQuestion(guildId) {
-  const guildStatus = await getGuildStatusDoc(guildId);
-
-  if (!guildStatus.currentQuestion) {
-    throw new Error('No question! Whoopsie!');
-  }
-
-  const currentQuestionSnapshot = guildStatus.currentQuestion.get();
-  if (currentQuestionSnapshot.exists) {
-    const currentQuestionId = currentQuestionSnapshot.data().id;
-    return reportTriviaQuestion(currentQuestionId)
-  }
-}
-
 /// Scores
 export async function awardTriviaPoints(guildId, userId, userName, points) {
   const scoreRef = getGuildStatusDocRef(guildId).collection('scores').doc(userId);
