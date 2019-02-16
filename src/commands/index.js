@@ -1,4 +1,5 @@
 import ping from "./ping";
+import whatisbestinlife from "./whatisbestinlife";
 import say from "./say";
 import roll from "./roll";
 import fixtable from "./fixtable";
@@ -29,5 +30,6 @@ export default {
   231: addquote,
   trivia,
   remind,
-  math
+  math,
+  whatisbestinlife
 };
