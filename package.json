@@ -4,13 +4,13 @@
   "description": "A small bot for the HLF community Discord guild",
   "main": "main.js",
   "engines": {
-    "node": ">=8.x",
-    "npm": "*"
+    "node": "10.15.1"
   },
   "scripts": {
     "babel-node": "babel-node",
     "build": "rimraf dist/ && babel . --out-dir dist/ --ignore ./node_modules",
     "start": "yarn build && cross-env NODE_ENV=production node ./dist/main.js",
+    "start:dev": "yarn build && cross-env NODE_ENV=development node ./dist/main.js",
     "dev": "cross-env NODE_ENV=development nodemon --exec yarn babel-node -- ./main.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint ./src",
