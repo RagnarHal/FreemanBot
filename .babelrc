@@ -3,9 +3,9 @@
     [
       "@babel/preset-env",
       {
-        "exclude": [
-          "babel-plugin-transform-classes"
-        ]
+        "targets": {
+          "node": "10"
+        }
       }
     ]
   ]
