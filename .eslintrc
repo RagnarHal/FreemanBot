@@ -2,10 +2,12 @@
   "env": {
     "node": true
   },
-
-  "extends": ["node"],
-
+  "extends": [
+    "node"
+  ],
   "rules": {
-    "import/no-namespace": 0
+    "import/no-namespace": 0,
+    "import/no-nodejs-modules": 0,
+    "class-methods-use-this": 0
   }
 }

@@ -1,11 +1,11 @@
 import logger from '../logger';
-import firebase from 'firebase';
+import firebase from 'firebase-admin';
 import { getRandomDocumentInCollection } from '../firestore';
 import env from '../env';
 
 const db = firebase.firestore();
-const QUOTES_COLLECTION = env.isDevelop ? 'quotes--dev' : 'quotes';
-const COUNTERS_COLLECTION = env.isDevelop ? 'counters--dev' : 'counters';
+const QUOTES_COLLECTION = env.isDevelopment ? 'quotes--dev' : 'quotes';
+const COUNTERS_COLLECTION = env.isDevelopment ? 'counters--dev' : 'counters';
 
 const quotesRef = db.collection(QUOTES_COLLECTION);
 const quotesCounterRef = db.collection(COUNTERS_COLLECTION).doc('quotes');

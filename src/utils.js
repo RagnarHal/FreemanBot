@@ -61,11 +61,11 @@ export function matchTemperatures(msg) {
 }
 
 export function celsiusToFahrenheit(tc) {
-  return tc * 9 / 5 + 32;
+  return (tc * 9) / 5 + 32;
 }
 
 export function fahrenheitToCelsius(tf) {
-  return (tf - 32) * 5 / 9;
+  return ((tf - 32) * 5) / 9;
 }
 
 export function createObjectPathGetter(p) {
@@ -89,4 +89,8 @@ export function hashCode(str) {
   }
 
   return hash;
+}
+
+export async function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

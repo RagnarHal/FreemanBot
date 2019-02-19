@@ -1,4 +1,4 @@
-import firebase from 'firebase';
+import firebase from 'firebase-admin';
 import { getRandomDocumentSnapshotInCollection, FieldValue } from '../firestore';
 import env from '../env';
 
@@ -7,8 +7,8 @@ const db = firebase.firestore();
 const TRIVIA_QUESTIONS = 'triviaQuestions';
 const TRIVIA_STATUS = 'triviaStatusByGuild'
 
-const TRIVIA_QUESTIONS_COLLECTION = env.isDevelop ? `${TRIVIA_QUESTIONS}--dev` : TRIVIA_QUESTIONS;
-const TRIVIA_STATUS_COLLECTION = env.isDevelop ? `${TRIVIA_STATUS}--dev` : TRIVIA_STATUS;
+const TRIVIA_QUESTIONS_COLLECTION = env.isDevelopment ? `${TRIVIA_QUESTIONS}--dev` : TRIVIA_QUESTIONS;
+const TRIVIA_STATUS_COLLECTION = env.isDevelopment ? `${TRIVIA_STATUS}--dev` : TRIVIA_STATUS;
 
 const questionsRef = db.collection(TRIVIA_QUESTIONS_COLLECTION);
 const statusRef = db.collection(TRIVIA_STATUS_COLLECTION);

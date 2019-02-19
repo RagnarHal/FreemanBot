@@ -1,5 +1,6 @@
-import { precisionRound } from "../utils";
-import logger from "../logger";
+import { Command } from "discord.js-commando";
+import { precisionRound } from "../../utils";
+import logger from "../../logger";
 
 const tokenTypes = {
   OPERATOR: "OPERATOR",
@@ -226,27 +227,40 @@ function evalPostfix(postfix) {
   return stack.pop().value;
 }
 
-export default (message, args = []) => {
-  if (!args.length) {
-    message.reply("Wat");
-    return;
+export default class Calculate extends Command {
+  constructor(client) {
+    super(client, {
+      name: "math",
+      aliases: ["calculate"],
+      group: "useful",
+      memberName: "math",
+      description: "Solve a simple math expression",
+      examples: ["math (1+2)*3"],
+      args: [
+        {
+          key: "expression",
+          prompt: "What do you want to solve?",
+          type: "string"
+        }
+      ]
+    });
   }
 
-  const expression = args.join(" ");
+  run(message, { expression }) {
+    try {
+      const postfix = infixToPostfix(expression);
+      logger.info(
+        `Math: Infix expression "${expression}" converted to postfix expression "${postfix
+          .map(t => t.value)
+          .join("")}"`
+      );
+      const result = evalPostfix(postfix);
 
-  try {
-    const postfix = infixToPostfix(expression);
-    logger.info(
-      `Math: Infix expression "${expression}" converted to postfix expression "${postfix
-        .map(t => t.value)
-        .join("")}"`
-    );
-    const result = evalPostfix(postfix);
-
-    message.reply(precisionRound(result, 3));
-  } catch (err) {
-    logger.error(err.stack);
-    message.reply(`Error: ${err.message}`);
-    return;
+      message.reply(precisionRound(result, 3));
+    } catch (err) {
+      logger.error(err.stack);
+      message.reply(`Error: ${err.message}`);
+      return;
+    }
   }
-};
+}

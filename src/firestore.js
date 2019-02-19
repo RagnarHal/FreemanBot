@@ -1,21 +1,19 @@
-import firebase from 'firebase';
-import 'firebase/firestore';
-import 'firebase/auth';
+import firebase from 'firebase-admin';
 import env from './env';
 
 firebase.initializeApp({
-  apiKey: "AIzaSyDoJEuT_Bo8u57fp47i5fVjcuxcemL3EyU",
-  authDomain: "freemanbot-1516651001919.firebaseapp.com",
-  databaseURL: "https://freemanbot-1516651001919.firebaseio.com",
-  projectId: "freemanbot-1516651001919",
-  storageBucket: "freemanbot-1516651001919.appspot.com",
-  messagingSenderId: "185485940912"
+  credential: firebase.credential.cert({
+    clientEmail: env.firebase.clientEmail,
+    privateKey: env.firebase.privateKey,
+    projectId: env.firebase.projectId
+  }),
+  databaseURL: env.firebase.databaseUrl
 });
-
-firebase.auth().signInWithEmailAndPassword(env.firebase.user, env.firebase.password);
 
 export const FieldValue = firebase.firestore.FieldValue;
 export const FieldPath = firebase.firestore.FieldPath;
+
+export const firestore = firebase.firestore();
 
 export async function getRandomDocumentSnapshotInCollection(collectionRef, retryCount = 0) {
   const querySnapshot = await collectionRef
