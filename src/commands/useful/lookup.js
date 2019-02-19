@@ -1,5 +1,6 @@
-import { lookupWord } from "../services/dictionary";
-import { getObjectPath } from "../utils";
+import { Command } from "discord.js-commando";
+import { lookupWord } from "../../services/dictionary";
+import { getObjectPath } from "../../utils";
 
 const createLine = (label, text) => (text ? `\n**${label}:** ${text}` : "");
 const createFormattedEntry = ({ lexicalCategory, entries }) => {
@@ -43,19 +44,33 @@ const createFormattedResponse = (query, results) => {
   return `${header}\n\n${list}`;
 };
 
-export default async (message, args = []) => {
-  if (!args.length) {
-    return message.reply("Specify which word you want to look up");
+export default class DictionaryLookup extends Command {
+  constructor(client) {
+    super(client, {
+      name: "lookup",
+      group: "useful",
+      memberName: "lookup",
+      description: "Look up a word or phrase in the Oxford English Dictionary",
+      examples: ["lookup jesus"],
+      args: [
+        {
+          key: "query",
+          prompt: "What do you want to look up?",
+          type: "string"
+        }
+      ]
+    });
   }
 
-  const query = args.join(" ");
+  async run(msg, args) {
+    const { query } = args;
+    const { lexicalEntries } = await lookupWord(query);
 
-  const { lexicalEntries } = await lookupWord(query);
+    if (!lexicalEntries.length) {
+      return msg.reply(`I couldn't find any definitions for "${query}"`);
+    }
 
-  if (!lexicalEntries.length) {
-    return message.reply(`I couldn't find any definitions for "${query}"`);
+    const normalizedResults = lexicalEntries.map(createFormattedEntry);
+    msg.channel.send(createFormattedResponse(query, normalizedResults));
   }
-
-  const normalizedResults = lexicalEntries.map(createFormattedEntry);
-  message.channel.send(createFormattedResponse(query, normalizedResults));
-};
+}

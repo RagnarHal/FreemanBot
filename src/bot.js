@@ -1,83 +1,114 @@
-import Discord from "discord.js";
-import trivia from "./plugins/trivia";
-import { setupNewGuildIfNotExists } from './services/trivia';
-import handlers from "./commands";
-import config from "./config.json";
+import { CommandoClient, FriendlyError } from "discord.js-commando";
+import path from "path";
+import { oneLine } from "common-tags";
+import AnswerCommand from "./commands/trivia/answer";
+import FirestoreSettingsProvider from "./FirestoreSettingsProvider";
+import { firestore } from "./firestore";
 import logger from "./logger";
 import env from "./env";
 
-function handleCommand(message, command, args, client) {
-  const handler = handlers[command];
-  typeof handler === "function"
-    ? handler(message, args, client)
-    : message.reply(
-      `I don't know how to handle a ${config.prefix}${command} command...`
-    );
-}
-
-async function createTriviaChannel(guild) {
-  await setupNewGuildIfNotExists(guild.id);
-
-  if (guild.channels.exists("name", "trivia")) {
-    logger.info(`Trivia channel for guild ${guild.name} already exists`);
-    return;
-  }
-
-  try {
-    await guild.createChannel("trivia", "text");
-    logger.info(`Created trivia channel for guild ${guild.name}`);
-  } catch (err) {
-    logger.error(`Unable to create trivia channel for guild ${guild.name}`, {
-      reason: err.message
+export default class FreemanBot {
+  constructor() {
+    this.client = new CommandoClient({
+      commandPrefix: ">",
+      owner: env.ownerId,
+      disableEveryone: true
     });
-  }
-}
 
-export default function start() {
-  const client = new Discord.Client();
+    this.client.registry
+      .registerDefaultTypes()
+      .registerGroups([
+        ["various", "Various little tools"],
+        ["passive", "Non-invokable, passive commands"],
+        ["useful", "Useful tools and helpers"],
+        ["quotes", "The HLF Quote Database®"],
+        ["trivia", "Play Trivia! (Only available in the #trivia channel)"]
+      ])
+      .registerDefaultGroups()
+      .registerDefaultCommands({ eval: false })
+      .registerCommandsIn(path.join(__dirname, "commands"));
 
-  client.on("ready", () => {
-    logger.info(
-      `Bot has started, with ${client.users.size} users, in ${
-      client.channels.size
-      } channels of ${client.guilds.size} guilds.`
+    const onReady = () => {
+      if (this.client.user) {
+        logger.info(
+          `Client ready; logged in as ${this.client.user.username}#${
+            this.client.user.discriminator
+          } (${this.client.user.id})`
+        );
+      } else {
+        logger.error("Client ready but no user on client!");
+      }
+    };
+
+    // Allow any message to be considered an answer in the #trivia channel
+    this.client.on("message", msg => {
+      if (msg.author.bot) {
+        return;
+      }
+
+      if (msg.channel.name === "trivia") {
+        const { content } = msg;
+        let shouldHandle = true;
+        ["answer", "hint", "question", "score", "skip", "report"].forEach(
+          cmd => {
+            if (~content.indexOf(cmd)) {
+              shouldHandle = false;
+            }
+          }
+        );
+
+        if (shouldHandle) {
+          logger.info("Handling trivia plain message");
+          const command = new AnswerCommand(this.client);
+
+          command.run(msg, { answer: content });
+        }
+      }
+    });
+
+    /* Discord.js events */
+    this.client
+      .on("ready", onReady)
+      .on("error", error => logger.error(`${error.message} - ${error.stack}`))
+      .on("warn", (...args) => logger.warn(...args))
+      .on("debug", (...args) => logger.info(...args))
+      .on("disconnect", () => logger.warn("Disconnected!"))
+      .on("reconnecting", () => logger.warn("Reconnecting..."));
+
+    const onCommandError = (cmd, err) => {
+      if (err instanceof FriendlyError) {
+        return;
+      }
+
+      logger.error(`Error in command ${cmd.groupID}:${cmd.memberName}`, err);
+    };
+
+    const onCommandBlocked = (msg, reason) => {
+      logger.info(oneLine`
+          Command ${
+            msg.command
+              ? `${msg.command.groupID}:${msg.command.memberName}`
+              : ""
+          }
+          blocked; ${reason}
+        `);
+    };
+    /* Commando events */
+    this.client
+      .on("commandError", onCommandError)
+      .on("commandBlocked", onCommandBlocked);
+
+    const settingsCollectionName = env.isProduction
+      ? "guildSettings"
+      : "guildSettings--dev";
+    this.client.setProvider(
+      new FirestoreSettingsProvider(firestore, settingsCollectionName)
     );
 
-    logger.info("Creating trivia channels for guilds");
-    client.guilds.array().forEach(createTriviaChannel);
-  });
+    this.client.login(env.botToken);
+  }
 
-  client.on("message", message => {
-    if (message.author.bot) {
-      return;
-    }
-
-    if (message.channel.name === "trivia") {
-      trivia(message);
-      return;
-    }
-
-    if (message.content === "(╯°□°）╯︵ ┻━┻") {
-      handleCommand(message, "fixtable");
-      return;
-    }
-
-    // Check every message for temperature conversions
-    handleCommand(message, "temperature");
-
-    if (message.content.indexOf(config.prefix) !== 0) {
-      return;
-    }
-
-    const args = message.content
-      .slice(config.prefix.length)
-      .trim()
-      .split(/ +/g);
-    const command = args.shift().toLowerCase();
-
-    handleCommand(message, command, args, client);
-  });
-
-  client.login(env.botToken);
-  return client;
+  start(token) {
+    this.client.login(token);
+  }
 }
