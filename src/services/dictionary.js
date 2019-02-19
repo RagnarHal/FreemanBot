@@ -2,11 +2,11 @@ import axios from "axios";
 import logger from "../logger";
 import env from "../env";
 
-const { baseUrl, timeout, appId, appKey } = env.oxford;
+const { baseUrl, appId, appKey } = env.oxford;
 
 const httpClient = axios.create({
   baseURL: baseUrl,
-  timeout,
+  timeout: 5000,
   headers: {
     app_id: appId,
     app_key: appKey

@@ -21,8 +21,7 @@ function setupEnv() {
     oxford: {
       appId: process.env.OXFORD_APP_ID,
       appKey: process.env.OXFORD_APP_KEY,
-      baseUrl: process.env.OXFORD_BASE_URL,
-      timeout: process.env.OXFORD_TIMEOUT_MS || 5000
+      baseUrl: process.env.OXFORD_BASE_URL
     },
     firebase: {
       databaseUrl: process.env.FIREBASE_DATABASE_URL,
@@ -44,8 +43,7 @@ function validateEnvironment() {
     "GOOGLE_API_KEY",
     "OXFORD_APP_ID",
     "OXFORD_APP_KEY",
-    "OXFORD_BASE_URL",
-    "OXFORD_TIMEOUT_MS"
+    "OXFORD_BASE_URL"
   ];
 
   const missingKeys = requiredEnvKeys.reduce((missing, key) => {
