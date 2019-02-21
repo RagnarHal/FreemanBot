@@ -91,6 +91,10 @@ export function hashCode(str) {
   return hash;
 }
 
+export function uppercaseFirst(str) {
+  return str.charAt(0).toUpperCase() + str.substr(1);
+}
+
 export async function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
