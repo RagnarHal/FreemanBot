@@ -6,6 +6,7 @@ import FirestoreSettingsProvider from "./FirestoreSettingsProvider";
 import { firestore } from "./firestore";
 import logger from "./logger";
 import env from "./env";
+import { createReminderDaemon } from "./services/reminder";
 
 export default class FreemanBot {
   constructor() {
@@ -22,14 +23,18 @@ export default class FreemanBot {
         ["passive", "Non-invokable, passive commands"],
         ["useful", "Useful tools and helpers"],
         ["quotes", "The HLF Quote Database®"],
+        ["reminders", "Set reminders"],
         ["trivia", "Play Trivia! (Only available in the #trivia channel)"]
       ])
       .registerDefaultGroups()
       .registerDefaultCommands({ eval: false })
       .registerCommandsIn(path.join(__dirname, "commands"));
 
+    const reminderDaemon = createReminderDaemon(this.client);
+
     const onReady = () => {
       if (this.client.user) {
+        reminderDaemon.start();
         logger.info(
           `Client ready; logged in as ${this.client.user.username}#${
             this.client.user.discriminator
@@ -38,6 +43,11 @@ export default class FreemanBot {
       } else {
         logger.error("Client ready but no user on client!");
       }
+    };
+
+    const onDisconnect = () => {
+      logger.warn("Disconnected!");
+      reminderDaemon.destroy();
     };
 
     // Allow any message to be considered an answer in the #trivia channel
@@ -72,7 +82,7 @@ export default class FreemanBot {
       .on("error", error => logger.error(`${error.message} - ${error.stack}`))
       .on("warn", (...args) => logger.warn(...args))
       .on("debug", (...args) => logger.info(...args))
-      .on("disconnect", () => logger.warn("Disconnected!"))
+      .on("disconnect", onDisconnect)
       .on("reconnecting", () => logger.warn("Reconnecting..."));
 
     const onCommandError = (cmd, err) => {
