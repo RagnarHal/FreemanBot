@@ -49,28 +49,45 @@ function parseArgs(args) {
   };
 }
 
-async function handleDeleteCommand(msg, reminderSlug) {
+async function handleDeleteCommand(msg, arg) {
   const { id: authorId } = msg.author;
 
-  if (reminderSlug) {
-    reminderSlug = reminderSlug.toUpperCase();
+  if (arg) {
+    arg = arg.toUpperCase();
+  }
+
+  if (arg === "ALL") {
+    return handleDeleteAllRemindersForAuthor(msg);
   }
 
   try {
-    const reminder = await getReminderBySlug(reminderSlug);
+    const reminder = await getReminderBySlug(arg);
     if (!reminder || reminder.authorId !== authorId) {
-      msg.reply(`Reminder ${reminderSlug} not found`);
+      msg.reply(`Reminder ${arg} not found`);
       return;
     }
 
     await deleteReminder(reminder.id);
 
-    msg.reply(`Reminder ${reminderSlug} deleted`);
+    msg.reply(`Reminder ${arg} deleted`);
   } catch (err) {
     logger.error({ message: err.message, stack: err.stack, error: err });
     msg.reply(
       "I was unable to delete the reminder for some reason, try again later"
     );
+  }
+}
+
+async function handleDeleteAllRemindersForAuthor(msg) {
+  const { id: authorId } = msg.author;
+
+  try {
+    const reminders = await getRemindersForAuthor(authorId);
+    await Promise.all(reminders.map(reminder => deleteReminder(reminder.id)));
+    msg.reply("All pending reminders deleted");
+  } catch (err) {
+    logger.error({ message: err.message, stack: err.stack, error: err });
+    msg.reply("I was unable to delete your reminders");
   }
 }
 

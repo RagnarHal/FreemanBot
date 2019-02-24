@@ -1,9 +1,9 @@
 import { Command } from "discord.js-commando";
 import sherlock from "sherlockjs";
+import chrono from "chrono-node";
 import moment from "moment";
-import { oneLine } from "common-tags";
 
-import { uppercaseFirst } from "../../utils";
+import { uppercaseFirst, removeFirstWord } from "../../utils";
 import { createReminder } from "../../services/reminder";
 import logger from "../../logger";
 
@@ -28,100 +28,88 @@ export default class Remind extends Command {
   async run(msg, args) {
     const { reminder } = args;
 
-    let trimmedReminder = reminder;
-    if (reminder.toLowerCase().startsWith("me")) {
-      trimmedReminder = reminder
-        .split(" ")
-        .slice(1)
-        .join(" ");
-    }
-    const subjectUser = msg.author;
-    const author = msg.author;
+    const parsedReminder = parseReminder(reminder);
+    const { isValid, errors } = validateParsedReminder(parsedReminder);
 
-    const sherlocked = this.postprocessSherlocked(
-      sherlock.parse(trimmedReminder)
-    );
-    const inputValidation = this.validateSherlocked(sherlocked);
-
-    if (!inputValidation.valid) {
-      return msg.reply(`Input was not valid: ${inputValidation.error}`);
+    if (!isValid) {
+      msg.reply("Invalid reminder:\n" + errors.join("\n"));
+      return;
     }
 
-    const { startDate, eventTitle } = sherlocked;
+    const { time: dateTime, message } = parsedReminder;
+    const { author } = msg;
 
-    const date = moment(startDate).format("ddd MMM Do YYYY");
-    const time = moment(startDate).format("HH:mm");
-    const triggerTimestamp = moment(startDate).valueOf();
+    const timeStr = dateTime.format("ddd MMM Do YYYY at HH:mm");
+    const triggerTimestamp = dateTime.valueOf();
 
     try {
       await createReminder({
         authorId: author.id,
         authorUsername: author.username,
-        subjectId: subjectUser.id,
+        subjectId: author.id,
         triggerTimestamp,
-        message: eventTitle
+        message
       });
-      msg.reply(oneLine`
-      Reminder set for ${subjectUser.username}:
-      '${eventTitle}' on ${date} at ${time} UTC
-    `);
+      msg.reply(` Reminder set for you: '${message}' on ${timeStr} UTC`);
     } catch (err) {
       logger.error({ message: err.message, stack: err.stack, error: err });
       msg.reply("Failed to set the reminder! :(");
     }
   }
+}
 
-  resolveSubject(msg, subject) {
-    if (subject === "me") {
-      return msg.author;
-    }
+function parseReminder(reminder) {
+  reminder = normalizeReminderString(reminder);
 
-    const subjectIsMention = /<@!?[0-9]+>/g.test(subject);
-    if (subjectIsMention) {
-      const userId = subject.replace(/[<@!>]/g, "");
-      const guildMember = msg.guild.member(userId);
-      return guildMember ? guildMember.user : undefined;
-    }
+  // Use chrono-node for extracting the trigger time
+  // Use sherlockjs to extract the event title, and as a fallback in case chrono
+  // can't parse
+  const chron = chrono.parse(reminder, Date.now(), { forwardDate: true });
+  const sher = sherlock.parse(reminder);
 
-    return undefined;
+  const parsedTime = chron.length ? chron[0].start.date() : sher.startDate;
+
+  return {
+    time: parsedTime ? moment(parsedTime) : undefined,
+    message: sher.eventTitle ? uppercaseFirst(sher.eventTitle) : undefined
+  };
+}
+
+function validateParsedReminder(parsedReminder) {
+  const { time, message } = parsedReminder;
+  const res = {
+    isValid: true,
+    errors: []
+  };
+
+  if (!time || time.isBefore(moment())) {
+    res.isValid = false;
+    res.errors.push("Invalid or missing time for reminder");
   }
 
-  postprocessSherlocked(sherlocked) {
-    const newSherlocked = { ...sherlocked };
-
-    const trimmed = newSherlocked.eventTitle.trim();
-
-    if (trimmed.startsWith("to ") || trimmed.startsWith("that ")) {
-      newSherlocked.eventTitle = trimmed
-        .split(" ")
-        .slice(1)
-        .join(" ");
-    }
-
-    newSherlocked.eventTitle = uppercaseFirst(newSherlocked.eventTitle);
-
-    return newSherlocked;
+  if (!message) {
+    res.isValid = false;
+    res.errors.push("Missing event title");
   }
 
-  validateSherlocked(sherlocked) {
-    if (!sherlocked.startDate) {
-      return {
-        valid: false,
-        error: "Missing reminder time/date"
-      };
-    }
+  return res;
+}
 
-    const reminderTime = moment(sherlocked.startDate);
+function normalizeReminderString(reminder) {
+  // Trim and remove any leading extra words like me and to
+  reminder = reminder.trim();
 
-    if (reminderTime.isBefore(moment())) {
-      return {
-        valid: false,
-        error: "Cannot set reminder in the past"
-      };
-    }
-
-    return {
-      valid: true
-    };
+  if (reminder.startsWith("me")) {
+    reminder = removeFirstWord(reminder);
   }
+
+  if (reminder.startsWith("to")) {
+    reminder = removeFirstWord(reminder);
+  }
+
+  if (reminder.startsWith("that")) {
+    reminder = removeFirstWord(reminder);
+  }
+
+  return reminder;
 }

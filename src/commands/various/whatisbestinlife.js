@@ -1,6 +1,8 @@
 import { Command } from "discord.js-commando";
 import { wait } from "../../utils";
 
+let isReady = true;
+
 export default class WhatIsBestInLife extends Command {
   constructor(client) {
     super(client, {
@@ -12,19 +14,22 @@ export default class WhatIsBestInLife extends Command {
   }
 
   async run(msg) {
-    msg.channel.startTyping();
-    await wait(1000);
-    msg.channel.stopTyping();
-    msg.channel.send("To crush your enemies.");
-    await wait(100);
-    msg.channel.startTyping();
-    await wait(2000);
-    msg.channel.stopTyping();
-    msg.channel.send("To see them driven before you.");
-    await wait(100);
-    msg.channel.startTyping();
-    await wait(2500);
-    msg.channel.stopTyping();
-    msg.channel.send("And to hear the lamentation of their women.");
+    if (!isReady) {
+      return;
+    }
+
+    const sendMessage = async (message, delay, typingDuration) => {
+      await wait(delay);
+      msg.channel.startTyping();
+      await wait(typingDuration);
+      await msg.channel.send(message);
+      msg.channel.stopTyping();
+    };
+
+    isReady = false;
+    await sendMessage("To crush your enemies.", 0, 1000);
+    await sendMessage("To see them driven before you.", 100, 2000);
+    await sendMessage("And to hear the lamentation of their women.", 100, 2500);
+    isReady = true;
   }
 }
