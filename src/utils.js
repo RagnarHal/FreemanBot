@@ -98,3 +98,7 @@ export function uppercaseFirst(str) {
 export async function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export function removeFirstWord(str) {
+  return str.split(" ").slice(1).join(" ")
+}
