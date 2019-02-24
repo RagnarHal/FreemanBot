@@ -3,6 +3,7 @@ import moment from "moment";
 import { firestore } from "../firestore";
 import env from "../env";
 import logger from "../logger";
+import cuid from "cuid";
 
 const REMINDERS = "reminders";
 const REMINDERS_COLLECTION_NAME = env.isDevelopment
@@ -112,6 +113,7 @@ export function createReminder({
 }) {
   return remindersRef.doc().set({
     authorId,
+    slug: cuid.slug().toUpperCase(),
     authorUsername,
     subjectId,
     message,
@@ -123,14 +125,8 @@ export function deleteReminder(id) {
   return remindersRef.doc(id).delete();
 }
 
-export function updateReminder(
-  id,
-  { authorId, authorUsername, subjectId, message, triggerTimestamp }
-) {
-  return remindersRef.doc(id).set({
-    authorId,
-    authorUsername,
-    subjectId,
+export function updateReminder(id, { message, triggerTimestamp }) {
+  return remindersRef.doc(id).update({
     message,
     triggerTimestamp
   });
@@ -149,4 +145,31 @@ export async function getRemindersForAuthor(authorId) {
     });
   });
   return reminders;
+}
+
+export async function getReminderById(reminderId) {
+  const documentSnapshot = await remindersRef.doc(reminderId).get();
+
+  if (!documentSnapshot.exists) {
+    return undefined;
+  }
+
+  return {
+    id: documentSnapshot.id,
+    ...documentSnapshot.data()
+  };
+}
+
+export async function getReminderBySlug(slug) {
+  const querySnapshot = await remindersRef
+    .where("slug", "==", slug.toUpperCase())
+    .limit(1)
+    .get();
+
+  const [reminder] = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+
+  return reminder;
 }
