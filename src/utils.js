@@ -100,5 +100,16 @@ export async function wait(ms) {
 }
 
 export function removeFirstWord(str) {
-  return str.split(" ").slice(1).join(" ")
+  return str
+    .split(" ")
+    .slice(1)
+    .join(" ");
+}
+
+export function isInteger(value) {
+  if (isNaN(value)) {
+    return false;
+  }
+  const x = parseFloat(value);
+  return (x | 0) === x;
 }
