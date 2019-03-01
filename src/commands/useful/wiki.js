@@ -37,14 +37,30 @@ export default class Wiki extends Command {
 }
 
 function createFormattedResponse(result) {
-  return stripIndents`
-    **${result.title}**
-    *${result.description}*
+  if (result.type === "disambiguation") {
+    return stripIndents`
+      **${result.title}**
 
+      ${result.title} may have several different meanings.
+
+      Please see ${result.url} for more information.
+    `;
+  }
+
+  let str = `**${result.title}**`;
+
+  if (result.description) {
+    str += `\n*${result.description}*`;
+  }
+
+  str += "\n\n";
+  str += stripIndents`
     ${result.summary}
 
-    Find more at ${result.url}.
+    Find out more at ${result.url}.
   `;
+
+  return str;
 }
 
 async function doLookup(phrase) {
@@ -52,6 +68,7 @@ async function doLookup(phrase) {
     const { data } = await axios.get(`${BASE_URL}/${phrase}`);
 
     return {
+      type: data.type,
       summary: data.extract,
       url: data.content_urls.desktop.page,
       mobileUrl: data.content_urls.mobile.page,
