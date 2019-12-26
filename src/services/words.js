@@ -7,7 +7,7 @@ export async function getWord(word) {
     const res = await createClient().get(`/words/${word}`);
     return res.data;
   } catch (err) {
-    logger.log("Words API returned non-2xx code");
+    logger.info("Words API returned non-2xx code");
     return null;
   }
 }
