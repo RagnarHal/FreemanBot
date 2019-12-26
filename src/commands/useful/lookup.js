@@ -1,47 +1,33 @@
 import { Command } from "discord.js-commando";
-import { lookupWord } from "../../services/dictionary";
-import { getObjectPath } from "../../utils";
+import { getWord } from "../../services/words";
 
-const createLine = (label, text) => (text ? `\n**${label}:** ${text}` : "");
-const createFormattedEntry = ({ lexicalCategory, entries }) => {
-  const definition = getObjectPath(["senses", 0, "definitions", 0], entries[0]);
-  const etymology = getObjectPath(["etymologies", 0], entries[0]);
-  const example = getObjectPath(
-    ["senses", 0, "examples", 0, "text"],
-    entries[0]
-  );
-
-  return {
-    lexicalCategory,
-    definition,
-    example,
-    etymology
-  };
-};
+const MAX_RESULTS_COUNT = 3;
 
 const createDefinitionText = ({
-  lexicalCategory,
   definition,
-  example,
-  etymology
+  partOfSpeech,
+  synonyms,
+  examples
 }) => {
-  const lines = [
-    createLine("Definition", definition),
-    createLine("Etymology", etymology),
-    createLine("Example", example)
-  ];
+  const lines = [`**Definition:** ${definition}`];
 
-  return `__${lexicalCategory}__\n${lines.join("")}`;
+  if (synonyms && synonyms.length) {
+    lines.push(`**Synonyms:**`);
+    lines.push(...synonyms.map(s => `- ${s}`));
+  }
+
+  if (examples && examples.length) {
+    lines.push(`**Examples:**`);
+    lines.push(...examples.map(e => `- ${e}`));
+  }
+
+  return `__${partOfSpeech}__\n${lines.join("\n")}`;
 };
 
-const createFormattedResponse = (query, results) => {
-  const entryCount = results.length;
-  const definitions = results.length > 1 ? "definitions" : "definition";
-
-  const header = `Found ${entryCount} ${definitions} for **__${query}__**:`;
+const createResponse = results => {
   const list = results.map(createDefinitionText).join("\n\n");
 
-  return `${header}\n\n${list}`;
+  return list;
 };
 
 export default class DictionaryLookup extends Command {
@@ -50,7 +36,7 @@ export default class DictionaryLookup extends Command {
       name: "lookup",
       group: "useful",
       memberName: "lookup",
-      description: "Look up a word or phrase in the Oxford English Dictionary",
+      description: "Look up a word or phrase in a Dictionary",
       examples: ["lookup jesus"],
       args: [
         {
@@ -64,13 +50,22 @@ export default class DictionaryLookup extends Command {
 
   async run(msg, args) {
     const { query } = args;
-    const { lexicalEntries } = await lookupWord(query);
+    const result = await getWord(query);
 
-    if (!lexicalEntries.length) {
+    if (!result) {
       return msg.reply(`I couldn't find any definitions for "${query}"`);
     }
 
-    const normalizedResults = lexicalEntries.map(createFormattedEntry);
-    msg.channel.send(createFormattedResponse(query, normalizedResults));
+    const { word, results } = result;
+
+    const definitions = results.length > 1 ? "definitions" : "definition";
+    let headerText = `Found ${results.length} ${definitions} for **__${word}__**:`;
+
+    if (results.length > MAX_RESULTS_COUNT) {
+      headerText += ` (Only first ${MAX_RESULTS_COUNT} are shown)`;
+    }
+
+    msg.channel.send(headerText);
+    msg.channel.send(createResponse(results.slice(0, MAX_RESULTS_COUNT)));
   }
 }

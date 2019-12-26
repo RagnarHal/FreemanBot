@@ -18,16 +18,15 @@ function setupEnv() {
     google: {
       apiKey: process.env.GOOGLE_API_KEY
     },
-    oxford: {
-      appId: process.env.OXFORD_APP_ID,
-      appKey: process.env.OXFORD_APP_KEY,
-      baseUrl: process.env.OXFORD_BASE_URL
-    },
     firebase: {
       databaseUrl: process.env.FIREBASE_DATABASE_URL,
       projectId: process.env.FIREBASE_PROJECT_ID,
       privateKey: JSON.parse(`"${process.env.FIREBASE_PRIVATE_KEY}"`),
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL
+    },
+    words: {
+      baseUrl: process.env.WORDS_API_URL,
+      key: process.env.WORDS_API_KEY
     }
   };
 }
@@ -41,9 +40,8 @@ function validateEnvironment() {
     "BOT_TOKEN",
     "OWNER_ID",
     "GOOGLE_API_KEY",
-    "OXFORD_APP_ID",
-    "OXFORD_APP_KEY",
-    "OXFORD_BASE_URL"
+    "WORDS_API_URL",
+    "WORDS_API_KEY"
   ];
 
   const missingKeys = requiredEnvKeys.reduce((missing, key) => {

@@ -29,9 +29,8 @@ This bot is designed to be run on any environment by anyone. Therefore, all envi
 - BOT_TOKEN
 - OWNER_ID
 - GOOGLE_API_KEY
-- OXFORD_APP_ID
-- OXFORD_APP_KEY
-- OXFORD_BASE_URL
+- WORDS_API_URL
+- WORDS_API_KEY
 - FIREBASE_DATABASE_URL
 - FIREBASE_PROJECT_ID
 - FIREBASE_PRIVATE_KEY
@@ -58,9 +57,9 @@ Make sure that the private key is copied verbatim, and in one line (with the \n 
 
 **Be careful never to commit the filled-in .env file or the service account credentials to source control. If you do by accident, immediately revoke the service account and create a new one**
 
-### Oxford English Dictionary
+### Words API
 
-The bot uses the [Oxford Dictionaries](https://developer.oxforddictionaries.com/) API to look up words in the dictionary. You will need to get credentials of your own.
+The bot uses the [Words API](https://www.wordsapi.com/) to look up words in the dictionary. You will need to get credentials of your own.
 
 ### Discord Token
 
