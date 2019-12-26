@@ -4,7 +4,7 @@
   "description": "A small bot for the HLF community Discord guild",
   "main": "src/index.js",
   "engines": {
-    "node": "10.15.1"
+    "node": ">=10.0.0"
   },
   "scripts": {
     "babel-node": "babel-node",
