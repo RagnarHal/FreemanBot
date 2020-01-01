@@ -27,6 +27,10 @@ function setupEnv() {
     words: {
       baseUrl: process.env.WORDS_API_URL,
       key: process.env.WORDS_API_KEY
+    },
+    news: {
+      baseUrl: process.env.NEWS_API_URL,
+      key: process.env.NEWS_API_KEY
     }
   };
 }
