@@ -113,3 +113,13 @@ export function isInteger(value) {
   const x = parseFloat(value);
   return (x | 0) === x;
 }
+
+export function maxBy(arr, p) {
+  if (!arr.length) return null;
+
+  return arr.slice().sort((a, b) => p(b) - p(a))[0];
+}
+
+export function normalize(value, min, max) {
+  return (value - min) / (max - min);
+}

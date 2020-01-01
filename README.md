@@ -61,6 +61,10 @@ Make sure that the private key is copied verbatim, and in one line (with the \n 
 
 The bot uses the [Words API](https://www.wordsapi.com/) to look up words in the dictionary. You will need to get credentials of your own.
 
+### News API
+
+The bot uses the free [JSON News API](https://newsapi.org/) service to look up news. You need to get your own API key.
+
 ### Discord Token
 
 To run the bot on a Discord channel, you need to set up a Discord app and grab a unique token. See [here](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token) for more details.
